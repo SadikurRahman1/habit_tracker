@@ -1,549 +1,562 @@
-import 'package:habit/core/wrappers/responsive_card.dart';
-
-import '../../../../core/exported_files/exported_file.dart';
-import '../controllers/home_controller.dart';
-import '../widgets/add_task_dialog.dart';
-import '../widgets/task_card.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:habit/core/constants/app_colors.dart';
+import 'package:habit/feature/habit_flow/bindings/habit_flow_binding.dart';
+import 'package:habit/feature/habit_flow/controllers/habit_controller.dart';
+import 'package:habit/feature/habit_flow/model/habit_model.dart';
+import 'package:habit/feature/habit_flow/screens/habit_creation_screen.dart';
+import 'package:habit/feature/home_flow/presentation/controllers/home_controller.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/add_item_bottom_sheet.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/calendar_bottom_sheet.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/category_filter_widget.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/habit_action_bottom_sheet.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/habit_card_widget.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/progress_bar_widget.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/week_day_selector.dart';
+import 'package:habit/feature/settings/category_flow/controllers/category_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<HomeController>();
-    return Obx(
-      () {
-        final monday = controller.getMonday(controller.selectedDate.value);
-            final weekDays = List.generate(
-              7,
-              (index) => monday.add(Duration(days: index)),
-            );
+  void _showNumericInputDialog(
+    BuildContext context,
+    HabitController habitController,
+    HabitModel habit,
+    DateTime date,
+  ) {
+    final existing = habitController.getCompletion(habit.id, date);
+    final currentValue = (existing?.numericValue ?? 0).obs;
 
-            return Scaffold(
-              backgroundColor: AppColors.bgColor,
-              appBar: AppBar(
-                backgroundColor: AppColors.mainColor,
-                elevation: 0,
-                title: const Text(
-                  'Habit Tracker',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                centerTitle: true,
-                actions: [
-                  GestureDetector(
-                    onTap: () => Get.toNamed('/settings'),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Icon(Icons.settings_outlined,
-                          color: Colors.white70),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const AddTaskDialog(),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Icon(Icons.add_circle_outline,
-                          color: Colors.blue.shade300),
-                    ),
-                  ),
-                ],
-              ),
-              body: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Week Calendar
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: AppColors.borderColor,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      controller.updateSelectedDate(
-                                        controller.selectedDate.value
-                                            .subtract(const Duration(days: 7)),
-                                      );
-                                    },
-                                    child: Icon(Icons.chevron_left,
-                                        color: Colors.white70),
-                                  ),
-                                  Text(
-                                    'This Week',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      controller.updateSelectedDate(
-                                        controller.selectedDate.value
-                                            .add(const Duration(days: 7)),
-                                      );
-                                    },
-                                    child: Icon(Icons.chevron_right,
-                                        color: Colors.white70),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              // Week Days
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: List.generate(7, (index) {
-                                  final day = weekDays[index];
-                                  final isToday = day.year ==
-                                          DateTime.now().year &&
-                                      day.month == DateTime.now().month &&
-                                      day.day == DateTime.now().day;
-                                  final dayName = [
-                                    'Mon',
-                                    'Tue',
-                                    'Wed',
-                                    'Thu',
-                                    'Fri',
-                                    'Sat',
-                                    'Sun'
-                                  ][index];
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      controller.updateSelectedDate(day);
-                                    },
-                                    child: Container(
-                                      width: 45,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10),
-                                      decoration: BoxDecoration(
-                                        color: isToday
-                                            ? Colors.blue
-                                            : (controller.selectedDate.value
-                                                        .year ==
-                                                    day.year &&
-                                                controller.selectedDate.value
-                                                        .month ==
-                                                    day.month &&
-                                                controller.selectedDate.value
-                                                        .day ==
-                                                    day.day)
-                                            ? Colors.blue.shade900
-                                            : Colors.transparent,
-                                        borderRadius:
-                                            BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: isToday
-                                              ? Colors.blue
-                                              : AppColors.borderColor,
-                                        ),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            dayName,
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: isToday
-                                                  ? Colors.white
-                                                  : Colors.white70,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${day.day}',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: isToday
-                                                  ? Colors.white
-                                                  : Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Category Filter
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Categories',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  _buildCategoryFilter(
-                                    'All',
-                                    null,
-                                    controller,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildCategoryFilter(
-                                    'Health',
-                                    'Health',
-                                    controller,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildCategoryFilter(
-                                    'Work',
-                                    'Work',
-                                    controller,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildCategoryFilter(
-                                    'Exercise',
-                                    'Exercise',
-                                    controller,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildCategoryFilter(
-                                    'Learning',
-                                    'Learning',
-                                    controller,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildCategoryFilter(
-                                    'Personal',
-                                    'Personal',
-                                    controller,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Progress Bar
-                        Obx(
-                          () {
-                            final total =
-                              controller.getTotalTasksForSelectedDay();
-                            final completed =
-                              controller.getCompletedTasksForSelectedDay();
-                            final percentage = total == 0
-                                ? 0.0
-                                : (completed / total);
-
-                            return Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      'Progress',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Text(
-                                      '$completed / $total',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.circular(8),
-                                  child: LinearProgressIndicator(
-                                    value: percentage,
-                                    minHeight: 8,
-                                    backgroundColor:
-                                        Colors.white12,
-                                    valueColor:
-                                        AlwaysStoppedAnimation<Color>(
-                                      percentage > 0.7
-                                          ? Colors.green
-                                          : percentage > 0.3
-                                          ? Colors.orange
-                                          : Colors.red,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Tasks List or Empty State
-                        Obx(
-                          () {
-                            final todayTasks = controller.getTasksForSelectedDay();
-                            
-                            if (todayTasks.isEmpty) {
-                              return ResponsiveCard(
-                                padding: const EdgeInsets.all(16),
-                                borderColor: AppColors.borderColor,
-                                backgroundColor: AppColors.mainColor,
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.inbox_outlined,
-                                      size: 48,
-                                      color: Colors.white38,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    const Text(
-                                      "No tasks for this day",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      "Add a task to get started!",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white54,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-
-                            return Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Your Tasks',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  physics:
-                                      const NeverScrollableScrollPhysics(),
-                                  itemCount: todayTasks.length,
-                                  itemBuilder: (context, index) {
-                                    final task = todayTasks[index];
-                                    return Column(
-                                      children: [
-                                        TaskCard(
-                                          task: task,
-                                          onDelete: () {
-                                            _showDeleteConfirmation(context, () {
-                                              controller.deleteTask(task.id);
-                                              Get.snackbar(
-                                                'Task Deleted',
-                                                'Task has been removed',
-                                                backgroundColor: Colors.orange,
-                                                colorText: Colors.white,
-                                              );
-                                            });
-                                          },
-                                          onTaskUpdate: (updatedTask) {
-                                            controller.updateTask(updatedTask);
-                                          },
-                                        ),
-                                        if (index < todayTasks.length - 1)
-                                          const SizedBox(height: 10),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-      },
-    );
-  }
-
-  void _showDeleteConfirmation(BuildContext context, VoidCallback onConfirm) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: AppColors.mainColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.borderColor),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+    Get.dialog(
+      Obx(
+        () => AlertDialog(
+          backgroundColor: AppColors.mainColor,
+          title: Text(habit.name, style: const TextStyle(color: Colors.white)),
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.warning_rounded,
-                color: Colors.orange,
-                size: 40,
+              Text(
+                'Target: ${habit.targetValue}',
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Delete Task?',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Are you sure you want to delete this task? This action cannot be undone.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white70,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // Minus button
+                        ElevatedButton(
+                          onPressed: () {
+                            if (currentValue.value > 0) {
+                              currentValue.value--;
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(12),
+                            elevation: 4,
                           ),
+                          child: const Icon(
+                            Icons.remove,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        // const SizedBox(width: 24),
+                        // Number display
+                        Text(
+                          currentValue.value.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+
+                        // const SizedBox(width: 24),
+                        // Plus button
+                        ElevatedButton(
+                          onPressed: () {
+                            currentValue.value++;
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade600,
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(12),
+                            elevation: 4,
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      currentValue.value >= habit.targetValue
+                          ? '✓ Target reached!'
+                          : '${habit.targetValue - currentValue.value} to go',
+                      style: TextStyle(
+                        color: currentValue.value >= habit.targetValue
+                            ? Colors.green
+                            : Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Progress indicator
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: (currentValue.value / habit.targetValue).clamp(
+                          0.0,
+                          1.0,
+                        ),
+                        minHeight: 6,
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          currentValue.value >= habit.targetValue
+                              ? Colors.green
+                              : Colors.blue,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        onConfirm();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Delete',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                habitController.updateNumericCompletion(
+                  habit.id,
+                  date,
+                  currentValue.value,
+                );
+                Get.back();
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildCategoryFilter(String label, String? category, HomeController controller) {
-    return Obx(
-      () {
-        final isSelected = controller.selectedCategory.value == category;
-        return GestureDetector(
-          onTap: () {
-            controller.selectedCategory.value = category;
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? Colors.blue : Colors.white10,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isSelected ? Colors.blue : AppColors.borderColor,
-              ),
+  void _showTextInputDialog(
+    BuildContext context,
+    HabitController habitController,
+    HabitModel habit,
+    DateTime date,
+  ) {
+    final controller = TextEditingController();
+    final existing = habitController.getCompletion(habit.id, date);
+    controller.text = existing?.textAnswer ?? '';
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: AppColors.mainColor,
+        title: Text(habit.name, style: const TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            labelText: 'Enter your answer',
+            labelStyle: TextStyle(color: Colors.white70),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.white30),
             ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.white70,
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final answer = controller.text.trim();
+              if (answer.isNotEmpty) {
+                habitController.updateTextCompletion(habit.id, date, answer);
+              }
+              Get.back();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleHabitTap(
+    BuildContext context,
+    HabitController habitController,
+    HomeController homeController,
+    HabitModel habit,
+  ) {
+    final isFuture = homeController.isFutureDate;
+    if (isFuture) return;
+
+    final date = homeController.selectedDate.value;
+
+    switch (habit.questionType) {
+      case HabitQuestionType.yesNo:
+        habitController.toggleYesNoCompletion(habit.id, date);
+        break;
+      case HabitQuestionType.numeric:
+        _showNumericInputDialog(context, habitController, habit, date);
+        break;
+      case HabitQuestionType.time:
+        homeController.toggleTimeCountdown(habit, date);
+        break;
+      case HabitQuestionType.text:
+        _showTextInputDialog(context, habitController, habit, date);
+        break;
+    }
+  }
+
+  void _handleCircleTap(
+    BuildContext context,
+    HabitController habitController,
+    HomeController homeController,
+    HabitModel habit,
+  ) {
+    final isFuture = homeController.isFutureDate;
+    if (isFuture) return;
+
+    final date = homeController.selectedDate.value;
+
+    switch (habit.questionType) {
+      case HabitQuestionType.yesNo:
+        habitController.toggleYesNoCompletion(habit.id, date);
+        break;
+      case HabitQuestionType.numeric:
+        _showNumericInputDialog(context, habitController, habit, date);
+        break;
+      case HabitQuestionType.time:
+        homeController.toggleTimeCountdown(habit, date);
+        break;
+      case HabitQuestionType.text:
+        _showTextInputDialog(context, habitController, habit, date);
+        break;
+    }
+  }
+
+  void _handleHabitLongPress(
+    HabitController habitController,
+    HabitModel habit,
+    DateTime date,
+  ) {
+    final completion = habitController.getCompletion(habit.id, date);
+    final isCompleted = completion?.isCompleted ?? false;
+
+    Get.bottomSheet(
+      HabitActionBottomSheet(
+        isCompleted: isCompleted,
+        onToggleComplete: () {
+          if (isCompleted) {
+            // Remove completion
+            if (habit.questionType == HabitQuestionType.time) {
+              Get.find<HomeController>().stopTimeCountdown(habit.id, date);
+            }
+            habitController.updateCompletion(
+              habitId: habit.id,
+              date: date,
+              isCompleted: false,
+            );
+          } else {
+            // Mark as complete based on type
+            switch (habit.questionType) {
+              case HabitQuestionType.yesNo:
+                habitController.toggleYesNoCompletion(habit.id, date);
+                break;
+              case HabitQuestionType.numeric:
+                habitController.updateNumericCompletion(
+                  habit.id,
+                  date,
+                  habit.targetValue,
+                );
+                break;
+              case HabitQuestionType.time:
+                Get.find<HomeController>().stopTimeCountdown(habit.id, date);
+                habitController.updateTimeCompletion(
+                  habit.id,
+                  date,
+                  habit.timeDurationMinutes,
+                );
+                break;
+              case HabitQuestionType.text:
+                habitController.updateTextCompletion(
+                  habit.id,
+                  date,
+                  'Completed',
+                );
+                break;
+            }
+          }
+        },
+        onEdit: () {
+          Get.to(
+            () => HabitCreationScreen(habitToEdit: habit),
+            binding: HabitFlowBinding(),
+          );
+        },
+        onSetNotification: () {
+          // TODO: Set notification
+          Get.snackbar('Coming Soon', 'Notification feature will be added');
+        },
+        onDelete: () {
+          Get.dialog(
+            AlertDialog(
+              backgroundColor: AppColors.mainColor,
+              title: const Text(
+                'Delete Habit',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: Text(
+                'Are you sure you want to delete "${habit.name}"?',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (habit.questionType == HabitQuestionType.time) {
+                      Get.find<HomeController>().stopTimeCountdown(
+                        habit.id,
+                        date,
+                      );
+                    }
+                    habitController.removeHabit(habit.id);
+                    Get.back();
+                    Get.snackbar(
+                      'Deleted',
+                      '${habit.name} has been deleted',
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
+                    );
+                  },
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final homeController = Get.find<HomeController>();
+    final habitController = Get.find<HabitController>();
+    final categoryController = Get.find<CategoryController>();
+
+    return Scaffold(
+      backgroundColor: AppColors.bgColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.mainColor,
+        elevation: 0,
+        title: const Text(
+          'Habit Tracker',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          // Calendar icon
+          GestureDetector(
+            onTap: () {
+              Get.bottomSheet(
+                CalendarBottomSheet(
+                  selectedDate: homeController.selectedDate.value,
+                  onDateSelected: (date) {
+                    homeController.updateSelectedDate(date);
+                  },
+                ),
+                isScrollControlled: true,
+              );
+            },
+            child: const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Icon(Icons.calendar_today, color: Colors.white70),
+            ),
+          ),
+          // Add button
+          GestureDetector(
+            onTap: () {
+              Get.bottomSheet(
+                const AddItemBottomSheet(),
+                isScrollControlled: true,
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Icon(
+                Icons.add_circle_outline,
+                color: Colors.blue.shade300,
               ),
             ),
           ),
-        );
-      },
+        ],
+      ),
+      body: SafeArea(
+        child: Obx(() {
+          final habits = homeController.getHabitsForSelectedDate();
+          final availableCategories = homeController
+              .getAvailableCategoriesForSelectedDate();
+          final totalHabits = homeController.getTotalHabitsForSelectedDate();
+          final completedHabits = homeController
+              .getCompletedHabitsForSelectedDate();
+
+          return Column(
+            children: [
+              // 7-day week selector
+              WeekDaySelector(
+                selectedDate: homeController.selectedDate.value,
+                onDateSelected: (date) {
+                  homeController.updateSelectedDate(date);
+                },
+              ),
+
+              // Category filter
+              CategoryFilterWidget(
+                selectedCategoryId: homeController.selectedCategoryId.value,
+                categories: availableCategories,
+                onCategorySelected: (categoryId) {
+                  homeController.selectCategory(categoryId);
+                },
+              ),
+
+              // Progress bar
+              if (totalHabits > 0)
+                ProgressBarWidget(
+                  completedCount: completedHabits,
+                  totalCount: totalHabits,
+                ),
+
+              // Habits list
+              Expanded(
+                child: habits.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.event_available,
+                              size: 64,
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No habits for this day',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: () {
+                                Get.bottomSheet(
+                                  const AddItemBottomSheet(),
+                                  isScrollControlled: true,
+                                );
+                              },
+                              icon: const Icon(Icons.add),
+                              label: const Text('Create Habit'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(top: 8),
+                        itemCount: habits.length,
+                        itemBuilder: (context, index) {
+                          final habit = habits[index];
+                          final category = categoryController.getCategoryById(
+                            habit.categoryId,
+                          );
+                          final timerRemainingSeconds =
+                              habit.questionType == HabitQuestionType.time
+                              ? homeController.getTimeRemainingSeconds(
+                                  habit,
+                                  homeController.selectedDate.value,
+                                )
+                              : null;
+                          final isTimeRunning =
+                              habit.questionType == HabitQuestionType.time
+                              ? homeController.isTimeCountdownRunning(
+                                  habit.id,
+                                  homeController.selectedDate.value,
+                                )
+                              : false;
+                          final completion = habitController.getCompletion(
+                            habit.id,
+                            homeController.selectedDate.value,
+                          );
+
+                          return HabitCardWidget(
+                            habit: habit,
+                            category: category,
+                            completion: completion,
+                            selectedDate: homeController.selectedDate.value,
+                            isFutureDate: homeController.isFutureDate,
+                            timeRemainingSeconds: timerRemainingSeconds,
+                            isTimeRunning: isTimeRunning,
+                            onTap: () => _handleHabitTap(
+                              context,
+                              habitController,
+                              homeController,
+                              habit,
+                            ),
+                            onCircleTap: () => _handleCircleTap(
+                              context,
+                              habitController,
+                              homeController,
+                              habit,
+                            ),
+                            onLongPress: () => _handleHabitLongPress(
+                              habitController,
+                              habit,
+                              homeController.selectedDate.value,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 }
