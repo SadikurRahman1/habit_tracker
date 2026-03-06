@@ -257,7 +257,7 @@ class ResponsiveDropdown extends StatelessWidget {
     this.dropdownItems,
     this.selectedValueNotifier,
     this.borderColor,
-    this.textColor = AppColors.primaryText,
+    this.textColor,
   });
 
   final String headerTitle;
@@ -281,6 +281,8 @@ class ResponsiveDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedTextColor = textColor ?? AppColors.primaryText;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,7 +294,7 @@ class ResponsiveDropdown extends StatelessWidget {
                 text: headerTitle,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: textColor,
+                color: resolvedTextColor,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -382,24 +384,23 @@ class ResponsiveDropdown extends StatelessWidget {
               );
             },
           )
-
         // ---------------- TEXTFIELD / DATE PICKER ----------------
         else
           GestureDetector(
             onTap: isDatePicker
                 ? () async {
-              FocusScope.of(context).unfocus();
-              final DateTime? pickedDate = await showDatePicker(
-                context: context,
-                initialDate: DateTime(2000),
-                firstDate: DateTime(1900),
-                lastDate: DateTime.now(),
-              );
-              if (pickedDate != null) {
-                controller.text =
-                "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-              }
-            }
+                    FocusScope.of(context).unfocus();
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime(2000),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (pickedDate != null) {
+                      controller.text =
+                          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                    }
+                  }
                 : null,
             child: AbsorbPointer(
               absorbing: isDatePicker,
@@ -409,18 +410,18 @@ class ResponsiveDropdown extends StatelessWidget {
                 borderWidth: 1.w,
                 prefixIcon: prefixIcon != null
                     ? Icon(
-                  prefixIcon,
-                  color: const Color(0xFF6B6B6B),
-                  size: 24.w,
-                )
+                        prefixIcon,
+                        color: const Color(0xFF6B6B6B),
+                        size: 24.w,
+                      )
                     : null,
                 hintText: hintText,
                 suffixIcon: suffixIcon != null
                     ? Icon(
-                  suffixIcon,
-                  color: const Color(0xFF6B6B6B),
-                  size: 24.w,
-                )
+                        suffixIcon,
+                        color: const Color(0xFF6B6B6B),
+                        size: 24.w,
+                      )
                     : null,
                 controller: controller,
                 validator: validator,

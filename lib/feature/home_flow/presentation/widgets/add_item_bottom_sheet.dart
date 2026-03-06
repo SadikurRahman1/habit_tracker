@@ -27,7 +27,7 @@ class AddItemBottomSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.handleColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -74,12 +74,12 @@ class AddItemBottomSheet extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Habit',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.onMainColor,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -87,7 +87,7 @@ class AddItemBottomSheet extends StatelessWidget {
                             'Create a recurring habit',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white70,
+                              color: AppColors.onMainSecondary,
                             ),
                           ),
                         ],
@@ -111,11 +111,8 @@ class AddItemBottomSheet extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.3),
-                  width: 2,
-                ),
+                color: AppColors.overlayColor,
+                border: Border.all(color: AppColors.borderColor, width: 2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -140,12 +137,12 @@ class AddItemBottomSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Task',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white70,
+                            color: AppColors.onMainSecondary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -153,7 +150,7 @@ class AddItemBottomSheet extends StatelessWidget {
                           'Coming soon',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white54,
+                            color: AppColors.onMainSecondary,
                           ),
                         ),
                       ],

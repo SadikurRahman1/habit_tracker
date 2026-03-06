@@ -46,10 +46,10 @@ class BottomNavBar extends StatelessWidget {
     return Obx(
       () => Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: AppColors.mainColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppColors.shadowColor,
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

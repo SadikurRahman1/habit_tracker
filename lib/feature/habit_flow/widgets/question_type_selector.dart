@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:habit/core/constants/app_colors.dart';
 import '../model/habit_model.dart';
 
 class QuestionTypeSelector extends StatelessWidget {
   final HabitQuestionType? selectedType;
   final Function(HabitQuestionType) onSelected;
+  final bool isEnabled;
 
   const QuestionTypeSelector({
     Key? key,
     required this.selectedType,
     required this.onSelected,
+    this.isEnabled = true,
   }) : super(key: key);
 
   @override
@@ -23,12 +26,12 @@ class QuestionTypeSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Question Type *',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.primaryText,
           ),
         ),
         const SizedBox(height: 12),
@@ -40,13 +43,15 @@ class QuestionTypeSelector extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: GestureDetector(
-              onTap: () => onSelected(type),
+              onTap: isEnabled ? () => onSelected(type) : null,
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.white10,
+                  color: isSelected
+                      ? Colors.blue.withOpacity(0.2)
+                      : AppColors.inputFillColor,
                   border: Border.all(
-                    color: isSelected ? Colors.blue : Colors.white24,
+                    color: isSelected ? Colors.blue : AppColors.borderColor,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -59,7 +64,9 @@ class QuestionTypeSelector extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isSelected ? Colors.blue : Colors.white30,
+                          color: isSelected
+                              ? Colors.blue
+                              : AppColors.borderColor,
                           width: 2,
                         ),
                       ),
@@ -81,8 +88,16 @@ class QuestionTypeSelector extends StatelessWidget {
                       label,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isSelected ? Colors.blue : Colors.white70,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isEnabled
+                            ? (isSelected
+                                  ? Colors.blue
+                                  : AppColors.secondaryText)
+                            : (isSelected
+                                  ? Colors.blue.withOpacity(0.75)
+                                  : AppColors.inActiveColor),
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                     ),
                   ],

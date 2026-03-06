@@ -25,10 +25,10 @@ class TimeDurationPicker extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: const Text(
+              title: Text(
                 'Select Duration',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -41,8 +41,8 @@ class TimeDurationPicker extends StatelessWidget {
                     children: [
                       Text(
                         'Hours: $hours',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.onMainColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -54,7 +54,7 @@ class TimeDurationPicker extends StatelessWidget {
                         max: 24,
                         divisions: 24,
                         activeColor: Colors.blue,
-                        inactiveColor: Colors.white24,
+                        inactiveColor: AppColors.borderColor,
                         label: '$hours h',
                         onChanged: (value) {
                           setState(() {
@@ -72,8 +72,8 @@ class TimeDurationPicker extends StatelessWidget {
                     children: [
                       Text(
                         'Minutes: $minutes',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.onMainColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -85,7 +85,7 @@ class TimeDurationPicker extends StatelessWidget {
                         max: 59,
                         divisions: 59,
                         activeColor: Colors.blue,
-                        inactiveColor: Colors.white24,
+                        inactiveColor: AppColors.borderColor,
                         label: '$minutes m',
                         onChanged: (value) {
                           setState(() {
@@ -102,9 +102,9 @@ class TimeDurationPicker extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.onMainSecondary),
                   ),
                 ),
                 TextButton(
@@ -130,19 +130,17 @@ class TimeDurationPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final hours = timeDurationMinutes ~/ 60;
     final minutes = timeDurationMinutes % 60;
-    final displayText = hours > 0
-        ? '$hours h $minutes m'
-        : '$minutes m';
+    final displayText = hours > 0 ? '$hours h $minutes m' : '$minutes m';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Time Duration *',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.primaryText,
           ),
         ),
         const SizedBox(height: 8),
@@ -151,9 +149,11 @@ class TimeDurationPicker extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white10,
+              color: AppColors.inputFillColor,
               border: Border.all(
-                color: timeDurationMinutes > 0 ? Colors.blue : Colors.white24,
+                color: timeDurationMinutes > 0
+                    ? Colors.blue
+                    : AppColors.borderColor,
                 width: 1.5,
               ),
               borderRadius: BorderRadius.circular(8),
@@ -162,20 +162,18 @@ class TimeDurationPicker extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  timeDurationMinutes > 0
-                      ? displayText
-                      : 'Select duration',
+                  timeDurationMinutes > 0 ? displayText : 'Select duration',
                   style: TextStyle(
                     fontSize: 14,
                     color: timeDurationMinutes > 0
                         ? Colors.blue
-                        : Colors.white54,
+                        : AppColors.secondaryText,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.access_time,
-                  color: Colors.white54,
+                  color: AppColors.secondaryText,
                   size: 20,
                 ),
               ],

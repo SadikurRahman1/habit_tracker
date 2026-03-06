@@ -5,10 +5,7 @@ import 'package:habit/core/constants/category_icons.dart';
 class AddCategoryDialog extends StatefulWidget {
   final Function(String name, String icon, String colorHex) onAdd;
 
-  const AddCategoryDialog({
-    Key? key,
-    required this.onAdd,
-  }) : super(key: key);
+  const AddCategoryDialog({Key? key, required this.onAdd}) : super(key: key);
 
   @override
   State<AddCategoryDialog> createState() => _AddCategoryDialogState();
@@ -72,34 +69,34 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              const Text(
+              Text(
                 'Add New Category',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                 ),
               ),
               const SizedBox(height: 20),
 
               // Category Name Field
-              const Text(
+              Text(
                 'Category Name',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                 ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: nameController,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.onMainColor),
                 decoration: InputDecoration(
                   hintText: 'e.g., Hobby, Travel, Health',
-                  hintStyle: const TextStyle(color: Colors.white54),
+                  hintStyle: TextStyle(color: AppColors.onMainSecondary),
                   filled: true,
-                  fillColor: Colors.white10,
+                  fillColor: AppColors.inputFillColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: AppColors.borderColor),
@@ -117,12 +114,12 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
               const SizedBox(height: 20),
 
               // Icon Selection
-              const Text(
+              Text(
                 'Select Icon',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -144,9 +141,11 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.blue.withOpacity(0.3)
-                              : Colors.white10,
+                              : AppColors.inputFillColor,
                           border: Border.all(
-                            color: isSelected ? Colors.blue : AppColors.borderColor,
+                            color: isSelected
+                                ? Colors.blue
+                                : AppColors.borderColor,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -154,7 +153,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                         child: Center(
                           child: Icon(
                             entry.value,
-                            color: Colors.white,
+                            color: AppColors.onMainColor,
                             size: 32,
                           ),
                         ),
@@ -166,12 +165,12 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
               const SizedBox(height: 20),
 
               // Color Selection
-              const Text(
+              Text(
                 'Select Color',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -180,7 +179,9 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                 runSpacing: 12,
                 children: colorOptions.map((colorHex) {
                   final isSelected = selectedColorHex == colorHex;
-                  final color = Color(int.parse(colorHex.replaceFirst('#', '0xff')));
+                  final color = Color(
+                    int.parse(colorHex.replaceFirst('#', '0xff')),
+                  );
 
                   return GestureDetector(
                     onTap: () {

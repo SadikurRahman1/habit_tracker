@@ -1,4 +1,3 @@
-
 import '../exported_files/exported_file.dart';
 
 class SimpleWeekDaySelector extends StatefulWidget {
@@ -20,7 +19,7 @@ class SimpleWeekDaySelector extends StatefulWidget {
     this.availableDays,
     this.itemSize = 48.0,
     this.spacing = 8.0,
-    this.selectedColor = AppColors.mainColor,
+    this.selectedColor = AppColors.primary,
     this.unselectedColor = Colors.white,
     this.selectedTextColor = Colors.white,
     this.unselectedTextColor = Colors.black,

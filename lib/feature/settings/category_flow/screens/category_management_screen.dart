@@ -12,24 +12,24 @@ class CategoryManagementScreen extends StatelessWidget {
 
   void _showAddCategoryDialog(BuildContext context) {
     final controller = Get.find<CategoryController>();
-    
+
     showDialog(
       context: context,
       builder: (context) => AddCategoryDialog(
         onAdd: (name, icon, colorHex) {
-          controller.addCategory(
-            name: name,
-            icon: icon,
-            colorHex: colorHex,
-          );
+          controller.addCategory(name: name, icon: icon, colorHex: colorHex);
         },
       ),
     );
   }
 
-  void _showDeleteDialog(BuildContext context, String categoryId, String categoryName) {
+  void _showDeleteDialog(
+    BuildContext context,
+    String categoryId,
+    String categoryName,
+  ) {
     final controller = Get.find<CategoryController>();
-    
+
     Get.dialog(
       DeleteCategoryDialog(
         categoryName: categoryName,
@@ -52,24 +52,21 @@ class CategoryManagementScreen extends StatelessWidget {
     final controller = Get.find<CategoryController>();
 
     return Scaffold(
-      backgroundColor: AppColors.mainColor,
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
         backgroundColor: AppColors.mainColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Manage Categories',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.onMainColor,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Get.back(),
-          child: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
+          child: Icon(Icons.arrow_back, color: AppColors.onMainColor),
         ),
       ),
       body: Obx(
@@ -81,19 +78,16 @@ class CategoryManagementScreen extends StatelessWidget {
                   crossAxisCount: 2,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
-                  childAspectRatio: 1.0,
+                  childAspectRatio: 2.50,
                 ),
                 itemCount: controller.categories.length,
                 itemBuilder: (context, index) {
                   final category = controller.categories[index];
-                  
+
                   return CategoryGridItem(
                     category: category,
-                    onLongPress: () => _showDeleteDialog(
-                      context,
-                      category.id,
-                      category.name,
-                    ),
+                    onLongPress: () =>
+                        _showDeleteDialog(context, category.id, category.name),
                   );
                 },
               ),
@@ -104,10 +98,7 @@ class CategoryManagementScreen extends StatelessWidget {
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Add Category',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
     );

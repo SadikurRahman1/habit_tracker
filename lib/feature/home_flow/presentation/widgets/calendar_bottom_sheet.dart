@@ -39,7 +39,7 @@ class CalendarBottomSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.handleColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -49,57 +49,61 @@ class CalendarBottomSheet extends StatelessWidget {
           // Calendar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Obx(() => TableCalendar(
-              firstDay: DateTime(2020, 1, 1),
-              lastDay: DateTime(2030, 12, 31),
-              focusedDay: focusedDay.value,
-              selectedDayPredicate: (day) {
-                return isSameDay(selectedDay.value, day);
-              },
-              onDaySelected: (selected, focused) {
-                selectedDay.value = selected;
-                focusedDay.value = focused;
-                onDateSelected(selected);
-                Get.back();
-              },
-              onPageChanged: (focused) {
-                focusedDay.value = focused;
-              },
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.3),
-                  shape: BoxShape.circle,
+            child: Obx(
+              () => TableCalendar(
+                firstDay: DateTime(2020, 1, 1),
+                lastDay: DateTime(2030, 12, 31),
+                focusedDay: focusedDay.value,
+                selectedDayPredicate: (day) {
+                  return isSameDay(selectedDay.value, day);
+                },
+                onDaySelected: (selected, focused) {
+                  selectedDay.value = selected;
+                  focusedDay.value = focused;
+                  onDateSelected(selected);
+                  Get.back();
+                },
+                onPageChanged: (focused) {
+                  focusedDay.value = focused;
+                },
+                calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  selectedDecoration: const BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                  ),
+                  defaultTextStyle: TextStyle(color: AppColors.onMainColor),
+                  weekendTextStyle: TextStyle(color: AppColors.onMainSecondary),
+                  outsideTextStyle: TextStyle(
+                    color: AppColors.onMainSecondary.withOpacity(0.6),
+                  ),
                 ),
-                selectedDecoration: const BoxDecoration(
-                  color: Colors.blue,
-                  shape: BoxShape.circle,
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle: TextStyle(
+                    color: AppColors.onMainColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  leftChevronIcon: Icon(
+                    Icons.chevron_left,
+                    color: AppColors.onMainColor,
+                  ),
+                  rightChevronIcon: Icon(
+                    Icons.chevron_right,
+                    color: AppColors.onMainColor,
+                  ),
                 ),
-                defaultTextStyle: const TextStyle(color: Colors.white),
-                weekendTextStyle: const TextStyle(color: Colors.white70),
-                outsideTextStyle: const TextStyle(color: Colors.white30),
+                daysOfWeekStyle: DaysOfWeekStyle(
+                  weekdayStyle: TextStyle(color: AppColors.onMainSecondary),
+                  weekendStyle: TextStyle(color: AppColors.onMainSecondary),
+                ),
               ),
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                leftChevronIcon: const Icon(
-                  Icons.chevron_left,
-                  color: Colors.white,
-                ),
-                rightChevronIcon: const Icon(
-                  Icons.chevron_right,
-                  color: Colors.white,
-                ),
-              ),
-              daysOfWeekStyle: const DaysOfWeekStyle(
-                weekdayStyle: TextStyle(color: Colors.white70),
-                weekendStyle: TextStyle(color: Colors.white70),
-              ),
-            )),
+            ),
           ),
           const SizedBox(height: 20),
         ],

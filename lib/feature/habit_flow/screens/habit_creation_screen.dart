@@ -14,7 +14,10 @@ class HabitCreationScreen extends StatelessWidget {
 
   const HabitCreationScreen({Key? key, this.habitToEdit}) : super(key: key);
 
-  void _handleSubmit(BuildContext context, HabitCreationFormController formController) {
+  void _handleSubmit(
+    BuildContext context,
+    HabitCreationFormController formController,
+  ) {
     final isEditMode = formController.isEditMode;
     final habitName = formController.habitNameController.text.trim();
     final success = formController.submit();
@@ -47,24 +50,21 @@ class HabitCreationScreen extends StatelessWidget {
       global: false,
       builder: (formController) {
         return Scaffold(
-          backgroundColor: AppColors.mainColor,
+          backgroundColor: AppColors.bgColor,
           appBar: AppBar(
             backgroundColor: AppColors.mainColor,
             elevation: 0,
             title: Text(
               formController.isEditMode ? 'Edit Habit' : 'Create New Habit',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.onMainColor,
               ),
             ),
             leading: GestureDetector(
               onTap: () => Get.back(),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.arrow_back, color: AppColors.onMainColor),
             ),
           ),
           body: SingleChildScrollView(
@@ -82,35 +82,43 @@ class HabitCreationScreen extends StatelessWidget {
                     ),
                     child: const Text(
                       'Fields marked with * are required',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue,
-                      ),
+                      style: TextStyle(fontSize: 12, color: AppColors.primary),
                     ),
                   ),
                   const SizedBox(height: 24),
                   QuestionTypeSelector(
                     selectedType: formController.selectedQuestionType,
                     onSelected: formController.setQuestionType,
+                    isEnabled: !formController.isEditMode,
                   ),
+                  if (formController.isEditMode) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Question type cannot be changed while editing.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.secondaryText,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Habit Name *',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.primaryText,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: formController.habitNameController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: AppColors.primaryText),
                     decoration: InputDecoration(
                       hintText: 'e.g., Morning Run, Read Books, Drink Water',
-                      hintStyle: const TextStyle(color: Colors.white54),
+                      hintStyle: TextStyle(color: AppColors.secondaryText),
                       filled: true,
-                      fillColor: Colors.white10,
+                      fillColor: AppColors.inputFillColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: AppColors.borderColor),
@@ -121,19 +129,24 @@ class HabitCreationScreen extends StatelessWidget {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  if (formController.selectedQuestionType == HabitQuestionType.numeric) ...[
+                  if (formController.selectedQuestionType ==
+                      HabitQuestionType.numeric) ...[
                     NumericValueInput(
                       targetValue: formController.targetValue,
                       onValueChanged: formController.setTargetValue,
                     ),
                     const SizedBox(height: 24),
                   ],
-                  if (formController.selectedQuestionType == HabitQuestionType.time) ...[
+                  if (formController.selectedQuestionType ==
+                      HabitQuestionType.time) ...[
                     TimeDurationPicker(
                       timeDurationMinutes: formController.timeDurationMinutes,
                       onDurationChanged: formController.setTimeDurationMinutes,
@@ -141,7 +154,8 @@ class HabitCreationScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                   ],
                   CategorySelector(
-                    selectedCategoryId: formController.selectedCategoryId.isEmpty
+                    selectedCategoryId:
+                        formController.selectedCategoryId.isEmpty
                         ? null
                         : formController.selectedCategoryId,
                     onCategorySelected: formController.setCategoryId,
@@ -159,16 +173,16 @@ class HabitCreationScreen extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => Get.back(),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white10,
+                            backgroundColor: AppColors.overlayColor,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Cancel',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.primaryText,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -178,7 +192,8 @@ class HabitCreationScreen extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => _handleSubmit(context, formController),
+                          onPressed: () =>
+                              _handleSubmit(context, formController),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -187,7 +202,9 @@ class HabitCreationScreen extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            formController.isEditMode ? 'Update Habit' : 'Create Habit',
+                            formController.isEditMode
+                                ? 'Update Habit'
+                                : 'Create Habit',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:habit/core/constants/app_colors.dart';
 import 'package:habit/core/constants/category_icons.dart';
 import 'package:habit/core/models/category_model.dart';
 import 'package:habit/feature/habit_flow/model/habit_completion.dart';
@@ -100,6 +101,8 @@ class HabitCardWidget extends StatelessWidget {
         : Icons.help_outline;
     final categoryColor = category?.getColor() ?? Colors.grey;
     final isTimeHabit = habit.questionType == HabitQuestionType.time;
+    final textPrimary = AppColors.primaryText;
+    final textSecondary = AppColors.secondaryText;
 
     return GestureDetector(
       onTap: onTap,
@@ -108,9 +111,9 @@ class HabitCardWidget extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: AppColors.overlayColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          border: Border.all(color: AppColors.borderColor, width: 1),
         ),
         child: Row(
           children: [
@@ -133,8 +136,8 @@ class HabitCardWidget extends StatelessWidget {
                 children: [
                   Text(
                     habit.name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -159,10 +162,7 @@ class HabitCardWidget extends StatelessWidget {
                       if (remaining <= 0) {
                         return Text(
                           'Completed',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 13,
-                          ),
+                          style: TextStyle(color: textSecondary, fontSize: 13),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         );
@@ -170,10 +170,7 @@ class HabitCardWidget extends StatelessWidget {
 
                       return Text(
                         '${_formatSeconds(remaining)} left${isRunning ? ' • Running' : ' • Paused'}',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: textSecondary, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       );
@@ -181,10 +178,7 @@ class HabitCardWidget extends StatelessWidget {
                   else
                     Text(
                       _getSubtitle(),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: textSecondary, fontSize: 13),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -223,11 +217,11 @@ class HabitCardWidget extends StatelessWidget {
                           shape: BoxShape.circle,
                           color: isTimeRunningNow
                               ? Colors.blue.withOpacity(0.2)
-                              : Colors.white.withOpacity(0.05),
+                              : AppColors.overlayColor,
                           border: Border.all(
                             color: isTimeRunningNow
                                 ? Colors.blue
-                                : Colors.white.withOpacity(0.3),
+                                : AppColors.borderColor,
                             width: 2,
                           ),
                         ),
@@ -235,7 +229,7 @@ class HabitCardWidget extends StatelessWidget {
                           isTimeRunningNow ? Icons.pause : Icons.play_arrow,
                           color: isTimeRunningNow
                               ? Colors.blue
-                              : Colors.white.withOpacity(0.4),
+                              : AppColors.inActiveColor,
                           size: 20,
                         ),
                       );
@@ -245,15 +239,15 @@ class HabitCardWidget extends StatelessWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
+                        color: AppColors.overlayColor,
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
+                          color: AppColors.borderColor,
                           width: 2,
                         ),
                       ),
                       child: Icon(
                         Icons.add,
-                        color: Colors.white.withOpacity(0.4),
+                        color: AppColors.inActiveColor,
                         size: 20,
                       ),
                     ),

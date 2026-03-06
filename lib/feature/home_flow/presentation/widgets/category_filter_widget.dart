@@ -29,25 +29,29 @@ class CategoryFilterWidget extends StatelessWidget {
               label: Text(
                 'All',
                 style: TextStyle(
-                  color: selectedCategoryId == null ? AppColors.white : AppColors.white,
-                  fontWeight: selectedCategoryId == null ? FontWeight.bold : FontWeight.normal,
+                  color: selectedCategoryId == null
+                      ? AppColors.white
+                      : AppColors.primaryText,
+                  fontWeight: selectedCategoryId == null
+                      ? FontWeight.bold
+                      : FontWeight.normal,
                 ),
               ),
               selected: selectedCategoryId == null,
               onSelected: (_) => onCategorySelected(null),
-              backgroundColor: AppColors.borderColor,
+              backgroundColor: AppColors.overlayColor,
               selectedColor: Colors.blue,
               checkmarkColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
                   color: AppColors.borderColor, // border color
-                  width: 1.5,                   // border width
+                  width: 1.5, // border width
                 ),
               ),
             ),
           ),
-          
+
           // Category chips
           ...categories.map((category) {
             final isSelected = selectedCategoryId == category.id;
@@ -57,20 +61,22 @@ class CategoryFilterWidget extends StatelessWidget {
                 label: Text(
                   category.name,
                   style: TextStyle(
-                    color: isSelected ? AppColors.white : category.getColor(),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? AppColors.white : AppColors.primaryText,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
                 selected: isSelected,
                 onSelected: (_) => onCategorySelected(category.id),
-                backgroundColor: AppColors.borderColor,
+                backgroundColor: AppColors.overlayColor,
                 selectedColor: category.getColor(),
                 checkmarkColor: AppColors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
                     color: AppColors.borderColor, // border color
-                    width: 1.5,                   // border width
+                    width: 1.5, // border width
                   ),
                 ),
               ),

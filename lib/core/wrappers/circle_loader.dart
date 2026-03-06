@@ -7,15 +7,12 @@ class CircleLoader extends StatelessWidget {
 
   const CircleLoader({
     super.key,
-    this.color = AppColors.mainColor,
+    this.color = AppColors.primary,
     this.size = 50,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SpinKitCircle(
-      color: color,
-      size: size.w,
-    );
+    return SpinKitCircle(color: color, size: size.w);
   }
 }

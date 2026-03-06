@@ -20,38 +20,36 @@ class CategoryGridItem extends StatelessWidget {
     return GestureDetector(
       onLongPress: onLongPress,
       child: Container(
+        padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           border: Border.all(
             color: color,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          // mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Icon Container
             Container(
-              width: 60,
-              height: 60,
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Icon(
                   icon,
                   color: color,
-                  size: 32,
+                  size: 24,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            
+
             // Category Name
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+            Expanded(
               child: Text(
                 category.name,
                 textAlign: TextAlign.center,
@@ -60,19 +58,8 @@ class CategoryGridItem extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   color: color,
                 ),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Hint Text
-            Text(
-              'Long press to delete',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.white38,
-                fontStyle: FontStyle.italic,
               ),
             ),
           ],

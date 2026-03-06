@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit/core/constants/app_colors.dart';
 
 class RepeatDaysSelector extends StatelessWidget {
   final List<bool> repeatDays;
@@ -17,53 +18,52 @@ class RepeatDaysSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Repeat Days *',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.primaryText,
           ),
         ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: List.generate(
-            7,
-            (index) {
-              final isSelected = repeatDays[index];
-              return GestureDetector(
-                onTap: () {
-                  final newDays = List<bool>.from(repeatDays);
-                  newDays[index] = !newDays[index];
-                  onDaysChanged(newDays);
-                },
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.blue : Colors.white10,
-                    border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.white24,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
+          children: List.generate(7, (index) {
+            final isSelected = repeatDays[index];
+            return GestureDetector(
+              onTap: () {
+                final newDays = List<bool>.from(repeatDays);
+                newDays[index] = !newDays[index];
+                onDaysChanged(newDays);
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : AppColors.inputFillColor,
+                  border: Border.all(
+                    color: isSelected ? Colors.blue : AppColors.borderColor,
+                    width: 1.5,
                   ),
-                  child: Center(
-                    child: Text(
-                      days[index],
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : Colors.white70,
-                      ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    days[index],
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? AppColors.white
+                          : AppColors.secondaryText,
                     ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          }),
         ),
       ],
     );

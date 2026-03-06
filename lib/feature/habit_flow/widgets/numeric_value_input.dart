@@ -16,12 +16,12 @@ class NumericValueInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Target Value *',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.primaryText,
           ),
         ),
         const SizedBox(height: 8),
@@ -31,12 +31,12 @@ class NumericValueInput extends StatelessWidget {
             onValueChanged(intValue);
           },
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppColors.primaryText),
           decoration: InputDecoration(
             hintText: 'e.g., 20, 50, 10',
-            hintStyle: const TextStyle(color: Colors.white54),
+            hintStyle: TextStyle(color: AppColors.secondaryText),
             filled: true,
-            fillColor: Colors.white10,
+            fillColor: AppColors.inputFillColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: AppColors.borderColor),

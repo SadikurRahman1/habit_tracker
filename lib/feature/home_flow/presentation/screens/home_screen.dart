@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:habit/core/constants/app_colors.dart';
 import 'package:habit/feature/habit_flow/bindings/habit_flow_binding.dart';
@@ -18,6 +19,60 @@ import 'package:habit/feature/settings/category_flow/controllers/category_contro
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  void _showManualNumericValueDialog(RxInt currentValue) {
+    final inputController = TextEditingController(
+      text: currentValue.value.toString(),
+    );
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: AppColors.mainColor,
+        title: Text(
+          'Set value',
+          style: TextStyle(color: AppColors.onMainColor),
+        ),
+        content: TextField(
+          controller: inputController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          style: TextStyle(color: AppColors.onMainColor),
+          decoration: InputDecoration(
+            hintText: 'Enter number',
+            hintStyle: TextStyle(color: AppColors.onMainSecondary),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final parsedValue = int.tryParse(inputController.text.trim());
+              if (parsedValue == null || parsedValue < 0) {
+                Get.snackbar(
+                  'Invalid value',
+                  'Please enter a valid number',
+                  snackPosition: SnackPosition.TOP,
+                  colorText: AppColors.white,
+                  backgroundColor: AppColors.orange,
+                );
+                return;
+              }
+
+              currentValue.value = parsedValue;
+              Get.back();
+            },
+            child: const Text('Set'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showNumericInputDialog(
     BuildContext context,
     HabitController habitController,
@@ -31,21 +86,27 @@ class HomeScreen extends StatelessWidget {
       Obx(
         () => AlertDialog(
           backgroundColor: AppColors.mainColor,
-          title: Text(habit.name, style: const TextStyle(color: Colors.white)),
+          title: Text(
+            habit.name,
+            style: TextStyle(color: AppColors.onMainColor),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Target: ${habit.targetValue}',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(
+                  color: AppColors.onMainSecondary,
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: AppColors.overlayColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: AppColors.borderColor),
                 ),
                 child: Column(
                   children: [
@@ -71,19 +132,34 @@ class HomeScreen extends StatelessWidget {
                             size: 24,
                           ),
                         ),
-                        // const SizedBox(width: 24),
-                        // Number display
-                        Text(
-                          currentValue.value.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'monospace',
+                        // Number display (tap to edit manually)
+                        GestureDetector(
+                          onTap: () =>
+                              _showManualNumericValueDialog(currentValue),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                currentValue.value.toString(),
+                                style: TextStyle(
+                                  color: AppColors.onMainColor,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Tap to edit',
+                                style: TextStyle(
+                                  color: AppColors.onMainSecondary,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
-                        // const SizedBox(width: 24),
                         // Plus button
                         ElevatedButton(
                           onPressed: () {
@@ -111,7 +187,7 @@ class HomeScreen extends StatelessWidget {
                       style: TextStyle(
                         color: currentValue.value >= habit.targetValue
                             ? Colors.green
-                            : Colors.white70,
+                            : AppColors.onMainSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -125,7 +201,7 @@ class HomeScreen extends StatelessWidget {
                           1.0,
                         ),
                         minHeight: 6,
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: AppColors.weakOverlayColor,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           currentValue.value >= habit.targetValue
                               ? Colors.green
@@ -173,16 +249,16 @@ class HomeScreen extends StatelessWidget {
     Get.dialog(
       AlertDialog(
         backgroundColor: AppColors.mainColor,
-        title: Text(habit.name, style: const TextStyle(color: Colors.white)),
+        title: Text(habit.name, style: TextStyle(color: AppColors.onMainColor)),
         content: TextField(
           controller: controller,
           maxLines: 3,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: AppColors.onMainColor),
+          decoration: InputDecoration(
             labelText: 'Enter your answer',
-            labelStyle: TextStyle(color: Colors.white70),
+            labelStyle: TextStyle(color: AppColors.onMainSecondary),
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white30),
+              borderSide: BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.blue),
@@ -327,13 +403,13 @@ class HomeScreen extends StatelessWidget {
           Get.dialog(
             AlertDialog(
               backgroundColor: AppColors.mainColor,
-              title: const Text(
+              title: Text(
                 'Delete Habit',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.onMainColor),
               ),
               content: Text(
                 'Are you sure you want to delete "${habit.name}"?',
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(color: AppColors.onMainSecondary),
               ),
               actions: [
                 TextButton(
@@ -382,12 +458,12 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.mainColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Habit Tracker',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.onMainColor,
           ),
         ),
         centerTitle: true,
@@ -405,9 +481,12 @@ class HomeScreen extends StatelessWidget {
                 isScrollControlled: true,
               );
             },
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.all(16.0),
-              child: Icon(Icons.calendar_today, color: Colors.white70),
+              child: Icon(
+                Icons.calendar_today,
+                color: AppColors.onMainSecondary,
+              ),
             ),
           ),
           // Add button
@@ -431,11 +510,26 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Obx(() {
           final habits = homeController.getHabitsForSelectedDate();
+          final habitsForDate = habitController.getHabitsForDate(
+            homeController.selectedDate.value,
+          );
+          final hasCategorizedHabits = habitsForDate.any(
+            (habit) => habit.categoryId.trim().isNotEmpty,
+          );
           final availableCategories = homeController
               .getAvailableCategoriesForSelectedDate();
           final totalHabits = homeController.getTotalHabitsForSelectedDate();
           final completedHabits = homeController
               .getCompletedHabitsForSelectedDate();
+
+          if (!hasCategorizedHabits &&
+              homeController.selectedCategoryId.value != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (homeController.selectedCategoryId.value != null) {
+                homeController.selectCategory(null);
+              }
+            });
+          }
 
           return Column(
             children: [
@@ -448,13 +542,14 @@ class HomeScreen extends StatelessWidget {
               ),
 
               // Category filter
-              CategoryFilterWidget(
-                selectedCategoryId: homeController.selectedCategoryId.value,
-                categories: availableCategories,
-                onCategorySelected: (categoryId) {
-                  homeController.selectCategory(categoryId);
-                },
-              ),
+              if (hasCategorizedHabits && availableCategories.isNotEmpty)
+                CategoryFilterWidget(
+                  selectedCategoryId: homeController.selectedCategoryId.value,
+                  categories: availableCategories,
+                  onCategorySelected: (categoryId) {
+                    homeController.selectCategory(categoryId);
+                  },
+                ),
 
               // Progress bar
               if (totalHabits > 0)
@@ -473,13 +568,13 @@ class HomeScreen extends StatelessWidget {
                             Icon(
                               Icons.event_available,
                               size: 64,
-                              color: Colors.white.withOpacity(0.3),
+                              color: AppColors.inActiveColor,
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'No habits for this day',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.5),
+                                color: AppColors.secondaryText,
                                 fontSize: 16,
                               ),
                             ),

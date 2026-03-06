@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:habit/core/constants/app_colors.dart';
 import '../model/habit_model.dart';
 import 'habit_controller.dart';
 
@@ -36,12 +37,18 @@ class HabitCreationFormController extends GetxController {
   }
 
   void setQuestionType(HabitQuestionType type) {
+    if (isEditMode && habitToEdit != null) {
+      selectedQuestionType = habitToEdit!.questionType;
+      update();
+      return;
+    }
+
     selectedQuestionType = type;
     update();
   }
 
   void setCategoryId(String categoryId) {
-    selectedCategoryId = categoryId;
+    selectedCategoryId = categoryId.trim();
     update();
   }
 
@@ -65,7 +72,9 @@ class HabitCreationFormController extends GetxController {
       Get.snackbar(
         'Error',
         'Please select a question type',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
+        colorText: AppColors.white,
+        backgroundColor: AppColors.orange,
       );
       return false;
     }
@@ -74,19 +83,16 @@ class HabitCreationFormController extends GetxController {
       Get.snackbar(
         'Error',
         'Please enter a habit name',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
+        colorText: AppColors.white,
+        backgroundColor: AppColors.orange,
       );
       return false;
     }
 
-    if (selectedCategoryId.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please select a category',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return false;
-    }
+    final effectiveQuestionType = isEditMode && habitToEdit != null
+        ? habitToEdit!.questionType
+        : selectedQuestionType!;
 
     final habitController = Get.find<HabitController>();
 
@@ -94,7 +100,7 @@ class HabitCreationFormController extends GetxController {
       return habitController.updateHabit(
         habitId: habitToEdit!.id,
         name: habitNameController.text,
-        questionType: selectedQuestionType!,
+        questionType: effectiveQuestionType,
         categoryId: selectedCategoryId,
         repeatDays: repeatDays,
         targetValue: targetValue,
@@ -104,7 +110,7 @@ class HabitCreationFormController extends GetxController {
 
     return habitController.addHabit(
       name: habitNameController.text,
-      questionType: selectedQuestionType!,
+      questionType: effectiveQuestionType,
       categoryId: selectedCategoryId,
       repeatDays: repeatDays,
       targetValue: targetValue,

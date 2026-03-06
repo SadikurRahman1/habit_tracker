@@ -10,44 +10,6 @@ import '../screens/bottom_nav_bar.dart';
 
 
 
-// class ProfileScreen extends StatelessWidget {
-//   const ProfileScreen({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text(''),
-//         backgroundColor: AppColors.mainColor,
-//         foregroundColor: Colors.white,
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             ResponsiveImage(
-//               path: IconsPath.profileActive,
-//               size: 80,
-//               color: AppColors.mainColor,
-//             ),
-//             const SizedBox(height: 20),
-//             ResponsiveText(
-//               text: 'Profile Screen',
-//               fontSize: 18,
-//               fontWeight: FontWeight.bold,
-//             ),
-//             const SizedBox(height: 10),
-//             ResponsiveText(
-//               text: 'Coming Soon',
-//               fontSize: 14,
-//               color: AppColors.gray,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 /// Main Home Screen with Bottom Navigation
 class MainBottomNavScreen extends StatefulWidget {

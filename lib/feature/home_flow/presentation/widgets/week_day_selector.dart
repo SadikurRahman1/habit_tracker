@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit/core/constants/app_colors.dart';
 
 class WeekDaySelector extends StatelessWidget {
   final DateTime selectedDate;
@@ -14,22 +15,22 @@ class WeekDaySelector extends StatelessWidget {
     // Get Monday of the current week
     final now = selectedDate;
     final monday = now.subtract(Duration(days: now.weekday - 1));
-    
+
     // Generate 7 days starting from Monday
     return List.generate(7, (index) => monday.add(Duration(days: index)));
   }
 
   bool _isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && 
-           date.month == now.month && 
-           date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   bool _isSelected(DateTime date) {
-    return date.year == selectedDate.year && 
-           date.month == selectedDate.month && 
-           date.day == selectedDate.day;
+    return date.year == selectedDate.year &&
+        date.month == selectedDate.month &&
+        date.day == selectedDate.day;
   }
 
   String _getDayName(int weekday) {
@@ -55,14 +56,17 @@ class WeekDaySelector extends StatelessWidget {
               width: 45,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? Colors.blue 
-                    : isToday 
-                        ? Colors.blue.withOpacity(0.2) 
-                        : Colors.transparent,
+                color: isSelected
+                    ? AppColors.primary
+                    : isToday
+                    ? AppColors.primary.withOpacity(0.2)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
                 border: isToday && !isSelected
-                    ? Border.all(color: Colors.blue.withOpacity(0.5), width: 1)
+                    ? Border.all(
+                        color: AppColors.primary.withOpacity(0.5),
+                        width: 1,
+                      )
                     : null,
               ),
               child: Column(
@@ -70,18 +74,26 @@ class WeekDaySelector extends StatelessWidget {
                   Text(
                     _getDayName(date.weekday),
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white70,
+                      color: isSelected
+                          ? AppColors.white
+                          : AppColors.secondaryText,
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white,
+                      color: isSelected
+                          ? AppColors.white
+                          : AppColors.primaryText,
                       fontSize: 16,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ],

@@ -16,39 +16,34 @@ class DeleteCategoryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.mainColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: const Text(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(
         'Delete Category?',
         style: TextStyle(
-          color: Colors.white,
+          color: AppColors.onMainColor,
           fontWeight: FontWeight.bold,
         ),
       ),
       content: Text(
         'Are you sure you want to delete "$categoryName"? This action cannot be undone.',
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 14,
-        ),
+        style: TextStyle(color: AppColors.onMainSecondary, fontSize: 14),
       ),
       actions: [
         TextButton(
           onPressed: () => Get.back(),
-          child: const Text(
+          child: Text(
             'Cancel',
             style: TextStyle(
-              color: Colors.grey,
+              color: AppColors.onMainSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
         TextButton(
-          onPressed: () {Get.back();
+          onPressed: () {
+            Get.back();
             onDelete();
-            
           },
           child: const Text(
             'Delete',

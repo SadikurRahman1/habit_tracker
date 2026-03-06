@@ -38,7 +38,7 @@ class HabitActionBottomSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.handleColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -46,10 +46,10 @@ class HabitActionBottomSheet extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Title
-          const Text(
+          Text(
             'Habit Actions',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.onMainColor,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -136,17 +136,13 @@ class _ActionTile extends StatelessWidget {
                 color: color.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 22,
-              ),
+              child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: AppColors.onMainColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),

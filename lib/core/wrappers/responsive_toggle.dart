@@ -1,6 +1,5 @@
 import '../exported_files/exported_file.dart';
 
-
 class ResponsiveToggle extends StatelessWidget {
   final List<String> options;
   final List<String>? images; // optional images list
@@ -20,17 +19,17 @@ class ResponsiveToggle extends StatelessWidget {
     required this.options,
     this.images,
     this.borderRadius = 32,
-    this.selectedColor = AppColors.mainColor,
+    this.selectedColor = AppColors.primary,
     this.unselectedColor = Colors.white,
     this.selectedTextColor = Colors.white,
     this.unselectedTextColor = Colors.black,
-    this.onChange,  
+    this.onChange,
     this.initialIndex = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-      _selectedIndex.value = initialIndex;
+    _selectedIndex.value = initialIndex;
     return ResponsiveContainer(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -50,7 +49,10 @@ class ResponsiveToggle extends StatelessWidget {
                 },
                 child: ResponsiveContainer(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? selectedColor : unselectedColor,
                     borderRadius: BorderRadius.circular(borderRadius),
@@ -64,12 +66,18 @@ class ResponsiveToggle extends StatelessWidget {
                           isSelected)
                         Padding(
                           padding: const EdgeInsets.only(right: 8),
-                          child: ResponsiveImage(path: images![index], size: 24, color: AppColors.white,),
+                          child: ResponsiveImage(
+                            path: images![index],
+                            size: 24,
+                            color: AppColors.white,
+                          ),
                         ),
 
                       ResponsiveText(
                         text: options[index],
-                        color: isSelected ? selectedTextColor : unselectedTextColor,
+                        color: isSelected
+                            ? selectedTextColor
+                            : unselectedTextColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ],
