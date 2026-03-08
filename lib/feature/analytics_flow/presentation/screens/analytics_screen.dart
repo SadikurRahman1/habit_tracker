@@ -1,4 +1,6 @@
 import 'package:habit/core/wrappers/responsive_card.dart';
+import 'package:habit/feature/home_flow/presentation/controllers/home_controller.dart';
+import 'package:habit/feature/home_flow/presentation/widgets/calendar_bottom_sheet.dart';
 import '../../../../core/exported_files/exported_file.dart';
 import '../controllers/analytics_controller.dart';
 import '../widgets/analytics_completion_section.dart';
@@ -12,8 +14,21 @@ import '../widgets/weekly_trend_chart.dart';
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
 
+  void _openCalendarBottomSheet(HomeController homeController) {
+    Get.bottomSheet(
+      CalendarBottomSheet(
+        selectedDate: homeController.selectedDate.value,
+        onDateSelected: homeController.updateSelectedDate,
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    final homeController = Get.find<HomeController>();
+    
     return GetBuilder<AnalyticsController>(
       init: AnalyticsController(),
       builder: (analyticsController) {
@@ -33,52 +48,40 @@ class AnalyticsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Center(
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: ResponsiveCard(
-                    backgroundColor: AppColors.mainColor,
-                    borderColor: AppColors.borderColor,
-                    onTap: () => Get.back(),
-                    child: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      color: AppColors.onMainColor,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ),
+            
+            // actions: [
+            //   Padding(
+            //     padding: const EdgeInsets.only(right: 16),
+            //     child: Center(
+            //       child: ResponsiveCard(
+            //         backgroundColor: AppColors.mainColor,
+            //         borderColor: AppColors.borderColor,
+            //         onTap: () => showDialog(
+            //           context: context,
+            //           builder: (context) => AnalyticsExportDialog(
+            //             homeController: homeController,
+            //             analyticsController: analyticsController,
+            //           ),
+            //         ),
+            //         child: const Icon(
+            //           Icons.download_rounded,
+            //           color: AppColors.primary,
+            //           size: 20,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ],
+             actions: [
+          // Calendar icon
+          GestureDetector(
+            onTap: () => _openCalendarBottomSheet(homeController),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Icon(Icons.calendar_today, color: AppColors.primary),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Center(
-                  child: SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: ResponsiveCard(
-                      backgroundColor: AppColors.mainColor,
-                      borderColor: AppColors.borderColor,
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (context) => AnalyticsExportDialog(
-                          homeController: homeController,
-                          analyticsController: analyticsController,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.download_rounded,
-                        color: AppColors.primary,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          ),
+        ],
           ),
           body: SafeArea(
             child: Obx(() {
@@ -91,11 +94,11 @@ class AnalyticsScreen extends StatelessWidget {
                     children: [
                       AnalyticsOverviewCard(controller: analyticsController),
                       const SizedBox(height: 20),
-                      DatePickerCalendar(
-                        initialDate: analyticsController.selectedDate.value,
-                        onDateSelected: analyticsController.updateSelectedDate,
-                      ),
-                      const SizedBox(height: 20),
+                      // DatePickerCalendar(
+                      //   initialDate: analyticsController.selectedDate.value,
+                      //   onDateSelected: analyticsController.updateSelectedDate,
+                      // ),
+                      // const SizedBox(height: 20),
                       AnalyticsStreakSection(controller: analyticsController),
                       const SizedBox(height: 20),
                       AnalyticsCompletionSection(
@@ -107,8 +110,8 @@ class AnalyticsScreen extends StatelessWidget {
                         selectedDate: analyticsController.selectedDate.value,
                       ),
                       const SizedBox(height: 20),
-                      WeeklyBreakdownCard(weeklyData: weeklyData),
-                      const SizedBox(height: 30),
+                      // WeeklyBreakdownCard(weeklyData: weeklyData),
+                      // const SizedBox(height: 30),
                     ],
                   ),
                 ),

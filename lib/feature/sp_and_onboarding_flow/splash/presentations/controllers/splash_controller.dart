@@ -2,7 +2,7 @@ import '../../../../../../../core/exported_files/exported_file.dart';
 
 class SplashController extends GetxController {
   Future<void> _moveToNext() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 1));
 
     // final String? onboardingCompeted = STService().getData(
     //   AuthConstants.onboardingCompletedKey,

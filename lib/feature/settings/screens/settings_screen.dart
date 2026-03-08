@@ -174,10 +174,7 @@ class SettingsScreen extends StatelessWidget {
               color: AppColors.onMainColor,
             ),
           ),
-          leading: GestureDetector(
-            onTap: () => Get.back(),
-            child: Icon(Icons.arrow_back, color: AppColors.onMainColor),
-          ),
+        centerTitle: true,
         ),
         body: SingleChildScrollView(
           child: Padding(
@@ -186,7 +183,7 @@ class SettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.overlayColor,
                     borderRadius: BorderRadius.circular(8),
@@ -329,20 +326,20 @@ class SettingsScreen extends StatelessWidget {
                                   ),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Selected: ${controller.formatMonth(controller.selectedReportMonth.value)}',
-                          style: TextStyle(
-                            color: textPrimary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Choose month and download report as PDF',
-                          style: TextStyle(color: textSecondary, fontSize: 12),
-                        ),
+                        // const SizedBox(height: 10),
+                        // Text(
+                        //   'Selected: ${controller.formatMonth(controller.selectedReportMonth.value)}',
+                        //   style: TextStyle(
+                        //     color: textPrimary,
+                        //     fontSize: 13,
+                        //     fontWeight: FontWeight.w500,
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 4),
+                        // Text(
+                        //   'Choose month and download report as PDF',
+                        //   style: TextStyle(color: textSecondary, fontSize: 12),
+                        // ),
                       ],
                     ),
                   ),

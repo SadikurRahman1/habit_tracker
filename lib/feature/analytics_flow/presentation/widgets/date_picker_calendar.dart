@@ -59,14 +59,25 @@ class _DatePickerCalendarState extends State<DatePickerCalendar> {
     final last = DateTime(dateTime.year, dateTime.month + 1, 0);
     final days = <DateTime>[];
 
-    // Add empty days for alignment
-    for (int i = first.weekday - 2; i >= 0; i--) {
-      days.add(first.subtract(Duration(days: i + 1)));
+    // Sunday-first alignment (Sun=0, Mon=1 ... Sat=6)
+    final leadingDays = first.weekday % 7;
+    for (int i = leadingDays; i > 0; i--) {
+      days.add(first.subtract(Duration(days: i)));
     }
 
     // Add actual days
     for (int i = 1; i <= last.day; i++) {
       days.add(DateTime(dateTime.year, dateTime.month, i));
+    }
+
+    // Enforce fixed 6 rows (42 cells)
+    final nextMonthFirst = DateTime(dateTime.year, dateTime.month + 1, 1);
+    int trailingDay = 1;
+    while (days.length < 42) {
+      days.add(
+        DateTime(nextMonthFirst.year, nextMonthFirst.month, trailingDay),
+      );
+      trailingDay++;
     }
 
     return days;
@@ -93,7 +104,7 @@ class _DatePickerCalendarState extends State<DatePickerCalendar> {
       'November',
       'December',
     ];
-    final weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return ResponsiveCard(
       borderColor: AppColors.borderColor,
@@ -209,13 +220,29 @@ class _DatePickerCalendarState extends State<DatePickerCalendar> {
                     : null,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary
-                        : isToday
-                        ? AppColors.primary.withValues(alpha: 0.25)
-                        : isCurrentMonth
-                        ? AppColors.overlayColor
-                        : AppColors.transparent,
+                    gradient: LinearGradient(
+                      colors: isSelected
+                          ? AppColors.isDarkMode
+                                ? [AppColors.primaryDark, AppColors.primary]
+                                : [AppColors.primary, AppColors.primaryLight]
+                          : isToday
+                          ? [
+                              AppColors.primary.withValues(alpha: 0.25),
+                              AppColors.primary.withValues(alpha: 0.25),
+                            ]
+                          : isCurrentMonth
+                          ? [AppColors.overlayColor, AppColors.overlayColor]
+                          : [AppColors.transparent, AppColors.transparent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    // color: isSelected
+                    //     ? AppColors.primary
+                    //     : isToday
+                    //     ? AppColors.primary.withValues(alpha: 0.25)
+                    //     : isCurrentMonth
+                    //     ? AppColors.overlayColor
+                    //     : AppColors.transparent,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
@@ -232,7 +259,9 @@ class _DatePickerCalendarState extends State<DatePickerCalendar> {
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: isCurrentMonth
-                            ? AppColors.onMainColor
+                            ? isSelected
+                                  ? AppColors.white
+                                  : AppColors.onMainColor
                             : AppColors.inActiveColor,
                       ),
                     ),

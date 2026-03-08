@@ -1,8 +1,8 @@
 enum HabitQuestionType {
-  yesNo,      // Yes or No
-  numeric,    // With a numeric value (target)
-  time,       // Time duration
-  text,       // Write answer
+  yesNo, // Yes or No
+  numeric, // With a numeric value (target)
+  time, // Time duration
+  text, // Write answer
 }
 
 class HabitModel {
@@ -10,11 +10,12 @@ class HabitModel {
   final String name;
   final HabitQuestionType questionType;
   final String categoryId;
-  final int targetValue;             // For numeric type: e.g., 20
-  final int timeDurationMinutes;     // For time type: duration in minutes
-  final List<bool> repeatDays;       // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
+  final int targetValue; // For numeric type: e.g., 20
+  final int timeDurationMinutes; // For time type: duration in minutes
+  final List<bool> repeatDays; // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
   final DateTime createdAt;
   final bool isActive;
+  final List<String> notificationTimes; // Notification times in "HH:mm" format
 
   HabitModel({
     required this.id,
@@ -23,9 +24,10 @@ class HabitModel {
     required this.categoryId,
     this.targetValue = 0,
     this.timeDurationMinutes = 0,
-    required this.repeatDays,  // Must be list of 7 bools
+    required this.repeatDays, // Must be list of 7 bools
     required this.createdAt,
     this.isActive = true,
+    this.notificationTimes = const [],
   });
 
   // Convert to JSON
@@ -40,6 +42,7 @@ class HabitModel {
       'repeatDays': repeatDays,
       'createdAt': createdAt.toIso8601String(),
       'isActive': isActive,
+      'notificationTimes': notificationTimes,
     };
   }
 
@@ -54,6 +57,9 @@ class HabitModel {
       timeDurationMinutes: json['timeDurationMinutes'] as int? ?? 0,
       repeatDays: List<bool>.from(json['repeatDays'] as List),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      notificationTimes: json['notificationTimes'] != null
+          ? List<String>.from(json['notificationTimes'] as List)
+          : [],
       isActive: json['isActive'] as bool? ?? true,
     );
   }

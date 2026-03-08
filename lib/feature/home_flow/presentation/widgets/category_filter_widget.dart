@@ -40,7 +40,7 @@ class CategoryFilterWidget extends StatelessWidget {
               selected: selectedCategoryId == null,
               onSelected: (_) => onCategorySelected(null),
               backgroundColor: AppColors.overlayColor,
-              selectedColor: Colors.blue,
+              selectedColor: AppColors.primaryDark,
               checkmarkColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),

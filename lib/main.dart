@@ -1,4 +1,3 @@
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'core/services/local_notification_service.dart';
@@ -6,13 +5,10 @@ import '../../../../../core/exported_files/exported_file.dart';
 import 'app/habit.dart';
 import 'firebase_options.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Initialize Firebase - with error handling for development
   // try {
   //   await Firebase.initializeApp();
@@ -26,6 +22,8 @@ Future<void> main() async {
   await GetStorage.init();
   await LocalNotificationService.initialize();
 
-
-  runApp(Habit());
+  runApp(const Habit());
+  Future<void>.delayed(const Duration(milliseconds: 500), () {
+    LocalNotificationService.handlePendingNotificationNavigation();
+  });
 }

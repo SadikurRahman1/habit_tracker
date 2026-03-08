@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:habit/core/constants/app_colors.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:habit/feature/analytics_flow/presentation/widgets/date_picker_calendar.dart';
 
 class CalendarBottomSheet extends StatelessWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
 
-  final focusedDay = Rx<DateTime>(DateTime.now());
-  final selectedDay = Rx<DateTime>(DateTime.now());
-
   CalendarBottomSheet({
     Key? key,
     required this.selectedDate,
     required this.onDateSelected,
-  }) : super(key: key) {
-    focusedDay.value = selectedDate;
-    selectedDay.value = selectedDate;
-  }
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final today = DateTime.now();
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.mainColor,
@@ -49,63 +45,68 @@ class CalendarBottomSheet extends StatelessWidget {
           // Calendar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Obx(
-              () => TableCalendar(
-                firstDay: DateTime(2020, 1, 1),
-                lastDay: DateTime(2030, 12, 31),
-                focusedDay: focusedDay.value,
-                selectedDayPredicate: (day) {
-                  return isSameDay(selectedDay.value, day);
-                },
-                onDaySelected: (selected, focused) {
-                  selectedDay.value = selected;
-                  focusedDay.value = focused;
-                  onDateSelected(selected);
-                  Get.back();
-                },
-                onPageChanged: (focused) {
-                  focusedDay.value = focused;
-                },
-                calendarStyle: CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  selectedDecoration: const BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
-                  ),
-                  defaultTextStyle: TextStyle(color: AppColors.onMainColor),
-                  weekendTextStyle: TextStyle(color: AppColors.onMainSecondary),
-                  outsideTextStyle: TextStyle(
-                    color: AppColors.onMainSecondary.withOpacity(0.6),
-                  ),
-                ),
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  titleTextStyle: TextStyle(
-                    color: AppColors.onMainColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  leftChevronIcon: Icon(
-                    Icons.chevron_left,
-                    color: AppColors.onMainColor,
-                  ),
-                  rightChevronIcon: Icon(
-                    Icons.chevron_right,
-                    color: AppColors.onMainColor,
-                  ),
-                ),
-                daysOfWeekStyle: DaysOfWeekStyle(
-                  weekdayStyle: TextStyle(color: AppColors.onMainSecondary),
-                  weekendStyle: TextStyle(color: AppColors.onMainSecondary),
-                ),
-              ),
+            child: DatePickerCalendar(
+              initialDate: selectedDate,
+              onDateSelected: (date) {
+                onDateSelected(date);
+                Get.back();
+              },
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.borderColor),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: TextStyle(
+                        color: AppColors.onMainColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final normalizedToday = DateTime(
+                        today.year,
+                        today.month,
+                        today.day,
+                      );
+                      onDateSelected(normalizedToday);
+                      Get.back();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Today',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

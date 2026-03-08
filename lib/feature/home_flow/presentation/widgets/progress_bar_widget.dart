@@ -18,19 +18,23 @@ class ProgressBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gradientColors = AppColors.isDarkMode
+        ? [AppColors.primaryDark, AppColors.primary]
+        : [AppColors.primary, AppColors.primaryLight];
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.purple.shade700, Colors.blue.shade600],
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.28),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -66,7 +70,7 @@ class ProgressBarWidget extends StatelessWidget {
             child: LinearProgressIndicator(
               value: _percentage,
               minHeight: 10,
-              backgroundColor: AppColors.white.withOpacity(0.3),
+              backgroundColor: AppColors.white.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
             ),
           ),
@@ -74,7 +78,7 @@ class ProgressBarWidget extends StatelessWidget {
           Text(
             '$completedCount of $totalCount habits completed',
             style: TextStyle(
-              color: AppColors.white.withOpacity(0.9),
+              color: AppColors.white.withValues(alpha: 0.9),
               fontSize: 13,
             ),
           ),

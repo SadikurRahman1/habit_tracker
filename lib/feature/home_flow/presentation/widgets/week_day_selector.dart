@@ -12,12 +12,12 @@ class WeekDaySelector extends StatelessWidget {
   }) : super(key: key);
 
   List<DateTime> _getWeekDates() {
-    // Get Monday of the current week
+    // Get Sunday of the current week
     final now = selectedDate;
-    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final sunday = now.subtract(Duration(days: now.weekday % 7));
 
-    // Generate 7 days starting from Monday
-    return List.generate(7, (index) => monday.add(Duration(days: index)));
+    // Generate 7 days starting from Sunday
+    return List.generate(7, (index) => sunday.add(Duration(days: index)));
   }
 
   bool _isToday(DateTime date) {
@@ -34,8 +34,8 @@ class WeekDaySelector extends StatelessWidget {
   }
 
   String _getDayName(int weekday) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days[weekday - 1];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[weekday % 7];
   }
 
   @override
@@ -56,6 +56,13 @@ class WeekDaySelector extends StatelessWidget {
               width: 45,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: AppColors.isDarkMode
+                      ? [AppColors.primaryDark, AppColors.primary]
+                      : [AppColors.primary, AppColors.primaryLight],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 color: isSelected
                     ? AppColors.primary
                     : isToday

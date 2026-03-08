@@ -200,10 +200,20 @@ class HabitController extends GetxController {
       repeatDays: repeatDays,
       createdAt: habits[index].createdAt,
       isActive: habits[index].isActive,
+      notificationTimes: habits[index].notificationTimes,
     );
     _saveHabits();
 
     return true;
+  }
+
+  // Update habit directly (for notification times, etc.)
+  void updateHabitModel(HabitModel habit) {
+    final index = habits.indexWhere((h) => h.id == habit.id);
+    if (index != -1) {
+      habits[index] = habit;
+      _saveHabits();
+    }
   }
 
   // Toggle habit active status
@@ -222,6 +232,7 @@ class HabitController extends GetxController {
         repeatDays: habit.repeatDays,
         createdAt: habit.createdAt,
         isActive: !habit.isActive,
+        notificationTimes: habit.notificationTimes,
       );
       _saveHabits();
     }
@@ -261,7 +272,9 @@ class HabitController extends GetxController {
 
       if (saved != null && saved is List) {
         final completionList = saved
-            .map((item) => HabitCompletion.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => HabitCompletion.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
         completions.assignAll(completionList);
       }
@@ -298,7 +311,7 @@ class HabitController extends GetxController {
     String? textAnswer,
   }) {
     final dateKey = HabitCompletion.createDateKey(date);
-    
+
     // Remove existing completion for this habit and date
     completions.removeWhere(
       (c) => c.habitId == habitId && c.getDateKey() == dateKey,
@@ -375,9 +388,11 @@ class HabitController extends GetxController {
   // Get completion percentage for a date
   double getCompletionPercentageForDate(DateTime date, {String? categoryId}) {
     var habitsForDate = getHabitsForDate(date);
-    
+
     if (categoryId != null) {
-      habitsForDate = habitsForDate.where((h) => h.categoryId == categoryId).toList();
+      habitsForDate = habitsForDate
+          .where((h) => h.categoryId == categoryId)
+          .toList();
     }
 
     if (habitsForDate.isEmpty) return 0;
@@ -396,9 +411,11 @@ class HabitController extends GetxController {
   // Get completed habits count for date
   int getCompletedCountForDate(DateTime date, {String? categoryId}) {
     var habitsForDate = getHabitsForDate(date);
-    
+
     if (categoryId != null) {
-      habitsForDate = habitsForDate.where((h) => h.categoryId == categoryId).toList();
+      habitsForDate = habitsForDate
+          .where((h) => h.categoryId == categoryId)
+          .toList();
     }
 
     int count = 0;

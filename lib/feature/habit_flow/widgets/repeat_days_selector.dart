@@ -39,8 +39,8 @@ class RepeatDaysSelector extends StatelessWidget {
                 onDaysChanged(newDays);
               },
               child: Container(
-                width: 50,
-                height: 50,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.blue : AppColors.inputFillColor,
                   border: Border.all(
