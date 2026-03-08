@@ -10,13 +10,13 @@ class AnalyticsStatCard extends StatelessWidget {
   final String? unit;
 
   const AnalyticsStatCard({
-    Key? key,
+    super.key,
     required this.icon,
     required this.label,
     required this.value,
     this.iconColor,
     this.unit,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,19 +29,15 @@ class AnalyticsStatCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: iconColor ?? Colors.white,
-                size: 24,
-              ),
+              Icon(icon, color: iconColor ?? AppColors.onMainColor, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white70,
+                    color: AppColors.onMainSecondary,
                   ),
                 ),
               ),
@@ -54,23 +50,23 @@ class AnalyticsStatCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                 ),
               ),
               if (unit != null) ...[
                 const SizedBox(width: 4),
                 Text(
                   unit!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white70,
+                    color: AppColors.onMainSecondary,
                   ),
                 ),
-              ]
+              ],
             ],
           ),
         ],

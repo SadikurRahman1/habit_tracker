@@ -16,7 +16,7 @@ class Habit extends StatelessWidget {
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.lightMainColor,
-        foregroundColor: AppColors.darkPrimaryText,
+        foregroundColor: AppColors.lightPrimaryText,
         elevation: 0,
       ),
       cardColor: AppColors.lightMainColor,

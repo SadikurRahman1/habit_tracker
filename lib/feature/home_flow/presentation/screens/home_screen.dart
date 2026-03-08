@@ -19,60 +19,6 @@ import 'package:habit/feature/settings/category_flow/controllers/category_contro
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _showManualNumericValueDialog(RxInt currentValue) {
-    final inputController = TextEditingController(
-      text: currentValue.value.toString(),
-    );
-
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: AppColors.mainColor,
-        title: Text(
-          'Set value',
-          style: TextStyle(color: AppColors.onMainColor),
-        ),
-        content: TextField(
-          controller: inputController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          style: TextStyle(color: AppColors.onMainColor),
-          decoration: InputDecoration(
-            hintText: 'Enter number',
-            hintStyle: TextStyle(color: AppColors.onMainSecondary),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.borderColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              final parsedValue = int.tryParse(inputController.text.trim());
-              if (parsedValue == null || parsedValue < 0) {
-                Get.snackbar(
-                  'Invalid value',
-                  'Please enter a valid number',
-                  snackPosition: SnackPosition.TOP,
-                  colorText: AppColors.white,
-                  backgroundColor: AppColors.orange,
-                );
-                return;
-              }
-
-              currentValue.value = parsedValue;
-              Get.back();
-            },
-            child: const Text('Set'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showNumericInputDialog(
     BuildContext context,
     HabitController habitController,
@@ -81,10 +27,24 @@ class HomeScreen extends StatelessWidget {
   ) {
     final existing = habitController.getCompletion(habit.id, date);
     final currentValue = (existing?.numericValue ?? 0).obs;
+    final valueController = TextEditingController(
+      text: currentValue.value.toString(),
+    );
+
+    void syncValueField() {
+      final valueText = currentValue.value.toString();
+      if (valueController.text != valueText) {
+        valueController.value = TextEditingValue(
+          text: valueText,
+          selection: TextSelection.collapsed(offset: valueText.length),
+        );
+      }
+    }
 
     Get.dialog(
-      Obx(
-        () => AlertDialog(
+      Obx(() {
+        syncValueField();
+        return AlertDialog(
           backgroundColor: AppColors.mainColor,
           title: Text(
             habit.name,
@@ -111,9 +71,7 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        // Minus button
                         ElevatedButton(
                           onPressed: () {
                             if (currentValue.value > 0) {
@@ -132,25 +90,66 @@ class HomeScreen extends StatelessWidget {
                             size: 24,
                           ),
                         ),
-                        // Number display (tap to edit manually)
-                        GestureDetector(
-                          onTap: () =>
-                              _showManualNumericValueDialog(currentValue),
+                        const SizedBox(width: 8),
+                        Expanded(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                currentValue.value.toString(),
+                              TextField(
+                                controller: valueController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: AppColors.onMainColor,
-                                  fontSize: 36,
+                                  fontSize: 30,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'monospace',
                                 ),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 8,
+                                  ),
+                                  filled: true,
+                                  fillColor: AppColors.inputFillColor,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: AppColors.borderColor,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: AppColors.borderColor,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    // borderSide: const BorderSide(
+                                    // color: Colors.blue,
+                                    // width: 1.5,
+                                    // ),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  if (value.isEmpty) {
+                                    currentValue.value = 0;
+                                    return;
+                                  }
+                                  final parsedValue = int.tryParse(value);
+                                  if (parsedValue != null) {
+                                    currentValue.value = parsedValue;
+                                  }
+                                },
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Tap to edit',
+                                'Direct edit',
                                 style: TextStyle(
                                   color: AppColors.onMainSecondary,
                                   fontSize: 10,
@@ -159,8 +158,7 @@ class HomeScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        // Plus button
+                        const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
                             currentValue.value++;
@@ -192,7 +190,6 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Progress indicator
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
@@ -231,8 +228,8 @@ class HomeScreen extends StatelessWidget {
               child: const Text('Save'),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 
@@ -261,7 +258,7 @@ class HomeScreen extends StatelessWidget {
               borderSide: BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue),
+              borderSide: BorderSide(color: AppColors.primary),
             ),
           ),
         ),
@@ -429,8 +426,8 @@ class HomeScreen extends StatelessWidget {
                     Get.snackbar(
                       'Deleted',
                       '${habit.name} has been deleted',
-                      backgroundColor: Colors.red,
-                      colorText: Colors.white,
+                      backgroundColor: AppColors.danger,
+                      colorText: AppColors.white,
                     );
                   },
                   child: const Text(

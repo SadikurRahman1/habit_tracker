@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit/core/constants/app_colors.dart';
 
 class EmptyCategoryState extends StatelessWidget {
   const EmptyCategoryState({Key? key}) : super(key: key);
@@ -12,24 +13,21 @@ class EmptyCategoryState extends StatelessWidget {
           Icon(
             Icons.category_outlined,
             size: 64,
-            color: Colors.white30,
+            color: AppColors.inActiveColor,
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No categories yet',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white70,
+              color: AppColors.primaryText,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Tap the button below to create one',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.secondaryText),
           ),
         ],
       ),

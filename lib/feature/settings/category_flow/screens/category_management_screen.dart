@@ -94,11 +94,11 @@ class CategoryManagementScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddCategoryDialog(context),
-        backgroundColor: Colors.blue,
-        icon: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.add, color: AppColors.white),
         label: const Text(
           'Add Category',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w600),
         ),
       ),
     );

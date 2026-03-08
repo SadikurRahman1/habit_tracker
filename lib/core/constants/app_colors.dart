@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../feature/settings/controllers/settings_controller.dart';
 
 class AppColors {
   // ⚪️ Basic Colors
@@ -43,7 +44,7 @@ class AppColors {
   static const Color darkSecondaryText = Color(0xFFCBD5E1);
 
   static const Color lightBgColor = Color(0xFFF8FAFC);
-  static const Color lightMainColor = Color(0xFF334155);
+  static const Color lightMainColor = Color(0xFFFFFFFF);
   static const Color lightBorderColor = Color(0xFFE2E8F0);
   static const Color lightInActiveColor = Color(0xFF64748B);
   static const Color lightPrimaryText = Color(0xFF0F172A);
@@ -65,7 +66,17 @@ class AppColors {
   static const Color info = Color(0xFF2196F3); // blue
   static const Color accent = Color(0xFFFF4081);
 
-  static bool get isDarkMode => Get.isDarkMode;
+  static bool get isDarkMode {
+    try {
+      // Try to get from SettingsController first for instant updates
+      if (Get.isRegistered<SettingsController>()) {
+        return Get.find<SettingsController>().isDarkMode.value;
+      }
+    } catch (_) {
+      // Controller not found, fall back to Get.isDarkMode
+    }
+    return Get.isDarkMode;
+  }
 
   static Color get bgColor => isDarkMode ? darkBgColor : lightBgColor;
   static Color get mainColor => isDarkMode ? darkMainColor : lightMainColor;
@@ -74,17 +85,18 @@ class AppColors {
   static Color get inActiveColor =>
       isDarkMode ? darkInActiveColor : lightInActiveColor;
 
-  static Color get onMainColor => darkPrimaryText;
+  static Color get onMainColor =>
+      isDarkMode ? darkPrimaryText : lightPrimaryText;
   static Color get onMainSecondary =>
-      isDarkMode ? darkSecondaryText : const Color(0xFFE2E8F0);
+      isDarkMode ? darkSecondaryText : lightSecondaryText;
 
   static Color get overlayColor => isDarkMode
-      ? Colors.white.withOpacity(0.06)
-      : Colors.black.withOpacity(0.04);
+      ? Colors.white.withValues(alpha: 0.06)
+      : Colors.black.withValues(alpha: 0.04);
   static Color get weakOverlayColor => isDarkMode
-      ? Colors.white.withOpacity(0.12)
-      : Colors.black.withOpacity(0.08);
+      ? Colors.white.withValues(alpha: 0.12)
+      : Colors.black.withValues(alpha: 0.08);
   static Color get handleColor => isDarkMode ? Colors.white24 : Colors.black26;
   static Color get inputFillColor =>
-      isDarkMode ? Colors.white10 : Colors.black.withOpacity(0.04);
+      isDarkMode ? Colors.white10 : Colors.black.withValues(alpha: 0.04);
 }

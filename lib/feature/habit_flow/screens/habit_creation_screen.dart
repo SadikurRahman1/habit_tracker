@@ -206,7 +206,7 @@ class HabitCreationScreen extends StatelessWidget {
                                 ? 'Update Habit'
                                 : 'Create Habit',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),

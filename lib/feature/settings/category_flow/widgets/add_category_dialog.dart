@@ -196,7 +196,9 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                         color: color,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isSelected ? Colors.white : Colors.transparent,
+                          color: isSelected
+                              ? AppColors.white
+                              : Colors.transparent,
                           width: isSelected ? 3 : 0,
                         ),
                       ),
@@ -204,7 +206,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                           ? const Center(
                               child: Icon(
                                 Icons.check,
-                                color: Colors.white,
+                                color: AppColors.white,
                                 size: 24,
                               ),
                             )
@@ -221,10 +223,10 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
+                    child: Text(
                       'Cancel',
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: AppColors.inActiveColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -234,7 +236,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                   ElevatedButton(
                     onPressed: _handleAdd,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -246,7 +248,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                     child: const Text(
                       'Add',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),

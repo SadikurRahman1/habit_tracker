@@ -16,10 +16,7 @@ class BottomNavItem {
 class BottomNavBar extends StatelessWidget {
   final Function(int) onTabChanged;
 
-  const BottomNavBar({
-    super.key,
-    required this.onTabChanged,
-  });
+  const BottomNavBar({super.key, required this.onTabChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -43,20 +40,28 @@ class BottomNavBar extends StatelessWidget {
       ),
     ];
 
-    return Obx(
-      () => Container(
+    return Obx(() {
+      final isDarkMode = AppColors.isDarkMode;
+      final navBackgroundColor = isDarkMode
+          ? AppColors.darkMainColor
+          : AppColors.lightMainColor;
+      final navShadowColor = isDarkMode
+          ? AppColors.black.withValues(alpha: 0.35)
+          : AppColors.black.withValues(alpha: 0.08);
+
+      return Container(
         decoration: BoxDecoration(
-          color: AppColors.mainColor,
+          color: navBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadowColor,
+              color: navShadowColor,
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
           ],
         ),
         child: BottomNavigationBar(
-          backgroundColor: AppColors.mainColor,
+          backgroundColor: navBackgroundColor,
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.inActiveColor,
           currentIndex: controller.selectedIndex.value,
@@ -83,8 +88,7 @@ class BottomNavBar extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
-

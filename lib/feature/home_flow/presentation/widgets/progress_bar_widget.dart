@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit/core/constants/app_colors.dart';
 
 class ProgressBarWidget extends StatelessWidget {
   final int completedCount;
@@ -22,10 +23,7 @@ class ProgressBarWidget extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.purple.shade700,
-            Colors.blue.shade600,
-          ],
+          colors: [Colors.purple.shade700, Colors.blue.shade600],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -44,18 +42,18 @@ class ProgressBarWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Today\'s Progress',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 '${(_percentage * 100).toInt()}%',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppColors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -68,15 +66,15 @@ class ProgressBarWidget extends StatelessWidget {
             child: LinearProgressIndicator(
               value: _percentage,
               minHeight: 10,
-              backgroundColor: Colors.white.withOpacity(0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: AppColors.white.withOpacity(0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '$completedCount of $totalCount habits completed',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: AppColors.white.withOpacity(0.9),
               fontSize: 13,
             ),
           ),

@@ -57,6 +57,9 @@ dependencies:
   uuid: ^4.0.0
 
   share_plus: ^7.0.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  path_provider: ^2.1.5
   flutter_local_notifications: ^17.2.4
 
   #firebase
