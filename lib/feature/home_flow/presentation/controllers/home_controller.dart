@@ -22,6 +22,7 @@ class HomeController extends GetxController {
   final _timeRemainingSecondsByHabitDate = <String, int>{}.obs;
   final _timeRunningByHabitDate = <String, bool>{}.obs;
   final Map<String, Timer> _timeTickers = {};
+  int _lastTimerNotificationSyncSecond = -1;
 
   HabitController get habitController => Get.find<HabitController>();
   CategoryController get categoryController => Get.find<CategoryController>();
@@ -30,16 +31,21 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     loadInitialTasks();
+    LocalNotificationService.registerPauseRunningTimersHandler(
+      pauseAllRunningTimersFromNotification,
+    );
     _restoreActiveTimers();
   }
 
   @override
   void onClose() {
+    LocalNotificationService.unregisterPauseRunningTimersHandler();
+    _saveAllTimerStates();
     for (final ticker in _timeTickers.values) {
       ticker.cancel();
     }
     _timeTickers.clear();
-    _saveAllTimerStates();
+    _requestRunningTimerNotificationSync(force: true);
     super.onClose();
   }
 
@@ -120,6 +126,7 @@ class HomeController extends GetxController {
       );
       _timeRemainingSecondsByHabitDate[key] = 0;
       _timeRunningByHabitDate[key] = false;
+      _requestRunningTimerNotificationSync(force: true);
       return;
     }
 
@@ -128,6 +135,7 @@ class HomeController extends GetxController {
 
     // Save timer state
     _saveTimerState(habit, date, isPaused: false);
+    _requestRunningTimerNotificationSync(force: true);
 
     _timeTickers[key]?.cancel();
     _timeTickers[key] = Timer.periodic(const Duration(seconds: 1), (ticker) {
@@ -153,10 +161,12 @@ class HomeController extends GetxController {
           habit.timeDurationMinutes,
         );
         timerStateService.removeTimerState(habit.id, date);
+        _requestRunningTimerNotificationSync(force: true);
         return;
       }
 
       _timeRemainingSecondsByHabitDate[key] = nextRemaining;
+      _requestRunningTimerNotificationSync();
 
       final elapsedSeconds = habit.timeDurationMinutes * 60 - nextRemaining;
       final elapsedMinutes = elapsedSeconds ~/ 60;
@@ -181,6 +191,7 @@ class HomeController extends GetxController {
 
     timerStateService.removeTimerState(habitId, date);
     _timeTickers.remove(key);
+    _requestRunningTimerNotificationSync(force: true);
   }
 
   void _pauseTimeCountdown(HabitModel habit, DateTime date) {
@@ -198,6 +209,104 @@ class HomeController extends GetxController {
 
     // Save paused state
     _saveTimerState(habit, date, isPaused: true);
+    _requestRunningTimerNotificationSync(force: true);
+  }
+
+  int _runningTimerCount() {
+    return _timeRunningByHabitDate.values
+        .where((isRunning) => isRunning)
+        .length;
+  }
+
+  String _formatTimerValue(int totalSeconds) {
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String _runningTimerText() {
+    final runningKeys = _timeRunningByHabitDate.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    if (runningKeys.isEmpty) {
+      return 'Timer running';
+    }
+
+    final runningSeconds = runningKeys
+        .map((key) => _timeRemainingSecondsByHabitDate[key] ?? 0)
+        .where((seconds) => seconds > 0)
+        .toList();
+
+    if (runningSeconds.isEmpty) {
+      return 'Timer running';
+    }
+
+    final nearestRemaining = runningSeconds.reduce(
+      (current, next) => current < next ? current : next,
+    );
+
+    return 'Remaining ${_formatTimerValue(nearestRemaining)}';
+  }
+
+  void _requestRunningTimerNotificationSync({bool force = false}) {
+    final nowSecond = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (!force && _lastTimerNotificationSyncSecond == nowSecond) return;
+
+    _lastTimerNotificationSyncSecond = nowSecond;
+    unawaited(_syncRunningTimerNotification());
+  }
+
+  Future<void> pauseAllRunningTimersFromNotification() async {
+    final runningKeys = _timeRunningByHabitDate.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    for (final key in runningKeys) {
+      final separatorIndex = key.indexOf('_');
+      if (separatorIndex <= 0) continue;
+
+      final habitId = key.substring(0, separatorIndex);
+      final dateRaw = key.substring(separatorIndex + 1);
+      final date = DateTime.tryParse(dateRaw);
+      if (date == null) continue;
+
+      final habit = habitController.getHabitById(habitId);
+      if (habit == null) {
+        _timeRunningByHabitDate[key] = false;
+        _timeTickers[key]?.cancel();
+        _timeTickers.remove(key);
+        continue;
+      }
+
+      _pauseTimeCountdown(habit, date);
+    }
+
+    await _syncRunningTimerNotification();
+  }
+
+  Future<void> _syncRunningTimerNotification() async {
+    await LocalNotificationService.handlePendingTimerActions();
+
+    final runningCount = _runningTimerCount();
+
+    if (runningCount > 0) {
+      await LocalNotificationService.showRunningTimerNotification(
+        runningCount: runningCount,
+        timerText: _runningTimerText(),
+      );
+      return;
+    }
+
+    await LocalNotificationService.cancelRunningTimerNotification();
   }
 
   /// Restore active timers from storage on app startup
@@ -235,6 +344,9 @@ class HomeController extends GetxController {
           _timeRunningByHabitDate[key] = false;
         }
       }
+
+      await LocalNotificationService.handlePendingTimerActions();
+      await _syncRunningTimerNotification();
     } catch (e) {
       print('Error restoring timers: $e');
     }
@@ -267,10 +379,12 @@ class HomeController extends GetxController {
         habit.timeDurationMinutes,
       );
       timerStateService.removeTimerState(habit.id, date);
+      _requestRunningTimerNotificationSync(force: true);
       return;
     }
 
     _timeRemainingSecondsByHabitDate[key] = nextRemaining;
+    _requestRunningTimerNotificationSync();
 
     final elapsedSeconds = habit.timeDurationMinutes * 60 - nextRemaining;
     final elapsedMinutes = elapsedSeconds ~/ 60;

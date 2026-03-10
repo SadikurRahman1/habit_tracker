@@ -1,9 +1,20 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:habit/core/app_routes/app_routes.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse response) {
+  unawaited(
+    LocalNotificationService.handleBackgroundNotificationResponse(response),
+  );
+}
 
 class LocalNotificationService {
   LocalNotificationService._();
@@ -12,6 +23,13 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
   static bool _isInitialized = false;
   static String? _pendingNotificationPayload;
+  static const int _runningTimerNotificationId = 987654321;
+  static const String _pauseTimersActionId = 'pause_habit_timers';
+  static const String _timerStatesStorageKey = 'habit_timer_states';
+  static const String _pendingTimerActionStorageKey =
+      'pending_timer_action_key';
+  static const String _pendingPauseActionValue = 'pause_habit_timers';
+  static Future<void> Function()? _onPauseRunningTimersRequested;
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
@@ -40,6 +58,7 @@ class LocalNotificationService {
     await _plugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
+      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
 
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
@@ -64,9 +83,115 @@ class LocalNotificationService {
   }
 
   static void _onNotificationTap(NotificationResponse response) {
+    if (response.actionId == _pauseTimersActionId ||
+        response.payload == 'timer:running') {
+      unawaited(_handlePauseRunningTimersAction(fromBackground: false));
+      return;
+    }
+
     final payload = response.payload;
     if (payload == null || payload.isEmpty) return;
     _navigateFromNotificationPayload(payload);
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> handleBackgroundNotificationResponse(
+    NotificationResponse response,
+  ) async {
+    if (response.actionId == _pauseTimersActionId) {
+      await _handlePauseRunningTimersAction(fromBackground: true);
+    }
+  }
+
+  static void registerPauseRunningTimersHandler(
+    Future<void> Function() handler,
+  ) {
+    _onPauseRunningTimersRequested = handler;
+  }
+
+  static void unregisterPauseRunningTimersHandler() {
+    _onPauseRunningTimersRequested = null;
+  }
+
+  static Future<void> handlePendingTimerActions() async {
+    await GetStorage.init();
+    final storage = GetStorage();
+    final pendingAction = storage.read(_pendingTimerActionStorageKey);
+
+    if (pendingAction != _pendingPauseActionValue) return;
+
+    await storage.remove(_pendingTimerActionStorageKey);
+
+    final handler = _onPauseRunningTimersRequested;
+    if (handler != null) {
+      await handler();
+    }
+  }
+
+  static Future<void> _handlePauseRunningTimersAction({
+    required bool fromBackground,
+  }) async {
+    await _pauseRunningTimersInStorage();
+
+    final handler = _onPauseRunningTimersRequested;
+    if (!fromBackground && handler != null) {
+      await handler();
+    } else {
+      await _markPendingPauseAction();
+    }
+
+    await cancelRunningTimerNotification(ensureInitialized: !fromBackground);
+  }
+
+  static Future<void> _markPendingPauseAction() async {
+    await GetStorage.init();
+    final storage = GetStorage();
+    await storage.write(
+      _pendingTimerActionStorageKey,
+      _pendingPauseActionValue,
+    );
+  }
+
+  static Future<void> _pauseRunningTimersInStorage() async {
+    await GetStorage.init();
+    final storage = GetStorage();
+    final jsonString = storage.read(_timerStatesStorageKey);
+
+    if (jsonString is! String || jsonString.isEmpty) return;
+
+    try {
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! List) return;
+
+      var changed = false;
+      final now = DateTime.now();
+
+      for (final item in decoded) {
+        if (item is! Map) continue;
+
+        final paused = item['pausedAtElapsedSeconds'];
+        if (paused != null) continue;
+
+        final startedAtRaw = item['startedAt'];
+        final totalSecondsRaw = item['totalSeconds'];
+        if (startedAtRaw is! String || totalSecondsRaw is! int) continue;
+
+        final startedAt = DateTime.tryParse(startedAtRaw);
+        if (startedAt == null) continue;
+
+        final elapsedSeconds = now
+            .difference(startedAt)
+            .inSeconds
+            .clamp(0, totalSecondsRaw);
+
+        item['pausedAtElapsedSeconds'] = elapsedSeconds;
+        changed = true;
+      }
+
+      if (changed) {
+        await storage.write(_timerStatesStorageKey, jsonEncode(decoded));
+      }
+    } catch (_) {}
   }
 
   static void handlePendingNotificationNavigation() {
@@ -319,6 +444,81 @@ class LocalNotificationService {
         );
       }
     }
+  }
+
+  /// Show ongoing notification while one or more habit timers are running.
+  static Future<void> showRunningTimerNotification({
+    required int runningCount,
+    required String timerText,
+  }) async {
+    await initialize();
+
+    if (runningCount <= 0) {
+      await cancelRunningTimerNotification();
+      return;
+    }
+
+    final title = runningCount == 1
+        ? 'Habit timer is running'
+        : '$runningCount habit timers are running';
+    final body = runningCount == 1
+        ? '$timerText • Tap Pause to pause.'
+        : '$timerText • Tap Pause to pause all.';
+
+    const androidDetails = AndroidNotificationDetails(
+      'habit_timer_running_channel',
+      'Running Habit Timers',
+      channelDescription:
+          'Shows an ongoing notification while habit timers are running',
+      importance: Importance.low,
+      priority: Priority.low,
+      ongoing: true,
+      autoCancel: false,
+      onlyAlertOnce: true,
+      playSound: false,
+      enableVibration: false,
+      visibility: NotificationVisibility.public,
+      actions: <AndroidNotificationAction>[
+        AndroidNotificationAction(
+          _pauseTimersActionId,
+          'Pause',
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+      ],
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: false,
+      presentBadge: false,
+      presentSound: false,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _plugin.show(
+      _runningTimerNotificationId,
+      title,
+      body,
+      details,
+      payload: 'timer:running',
+    );
+  }
+
+  /// Cancel ongoing running-timer notification.
+  static Future<void> cancelRunningTimerNotification({
+    bool ensureInitialized = true,
+  }) async {
+    if (ensureInitialized) {
+      await initialize();
+    }
+
+    try {
+      await _plugin.cancel(_runningTimerNotificationId);
+    } catch (_) {}
   }
 
   static int _habitNotificationId(String habitId, int timeIndex, int dayIndex) {

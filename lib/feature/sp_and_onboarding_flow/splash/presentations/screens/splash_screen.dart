@@ -15,9 +15,9 @@ class SplashScreen extends StatelessWidget {
         widget: Column(
           children: [
             const Spacer(),
-            ResponsiveImage(path: ImagePath.logo, fit: BoxFit.fill, size: 200),
+            Image.asset(ImagePath.logo, fit: BoxFit.fill, width: 200, height: 200),
             const Spacer(),
-            const CircleLoader(),
+            // const CircleLoader(),
           ],
         ),
       ),
