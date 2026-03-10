@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:habit/core/constants/app_colors.dart';
+import 'package:habit/core/constants/category_icons.dart';
+import 'package:habit/feature/settings/category_flow/controllers/category_controller.dart';
 import '../../model/task.dart';
 import '../controllers/home_controller.dart';
 
@@ -8,7 +10,8 @@ class AddTaskDialog extends StatelessWidget {
   final titleController = TextEditingController();
   final targetValueController = TextEditingController();
 
-  final selectedCategory = TaskCategory.other.obs;
+  final selectedCategoryId =
+      ''.obs; // Changed from TaskCategory enum to categoryId
   final selectedPriority = TaskPriority.medium.obs;
   final selectedTaskType = TaskType.descriptionOnly.obs;
   final selectedTimerMinutes = 5.obs;
@@ -48,7 +51,8 @@ class AddTaskDialog extends StatelessWidget {
       return;
     }
 
-    if (selectedTaskType.value == TaskType.timer && selectedTimerMinutes.value == 0) {
+    if (selectedTaskType.value == TaskType.timer &&
+        selectedTimerMinutes.value == 0) {
       Get.snackbar(
         'Error',
         'Please select timer duration',
@@ -63,12 +67,14 @@ class AddTaskDialog extends StatelessWidget {
     final homeController = Get.find<HomeController>();
     homeController.addTask(
       description: titleController.text,
-      category: selectedCategory.value,
+      categoryId: selectedCategoryId.value, // Use categoryId
       priority: selectedPriority.value,
       taskType: selectedTaskType.value,
       question: null,
       targetValue: targetValue,
-      timerDurationInSeconds: selectedTaskType.value == TaskType.timer ? selectedTimerMinutes.value * 60 : 0,
+      timerDurationInSeconds: selectedTaskType.value == TaskType.timer
+          ? selectedTimerMinutes.value * 60
+          : 0,
       selectedDays: selectedDays.toList()..sort(),
     );
 
@@ -89,7 +95,7 @@ class AddTaskDialog extends StatelessWidget {
       context: context,
       initialTime: TimeOfDay(hour: 0, minute: selectedTimerMinutes.value),
     );
-    
+
     if (picked != null) {
       int totalMinutes = picked.hour * 60 + picked.minute;
       if (totalMinutes == 0) totalMinutes = 5;
@@ -117,25 +123,37 @@ class AddTaskDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChip(TaskCategory category) {
+  Widget _buildCategoryChip(
+    String categoryId,
+    String label,
+    Color color,
+    IconData icon,
+  ) {
     return Obx(() {
-      final isSelected = selectedCategory.value == category;
+      final isSelected = selectedCategoryId.value == categoryId;
       return GestureDetector(
-        onTap: () => selectedCategory.value = category,
+        onTap: () => selectedCategoryId.value = categoryId,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? category.color : category.color.withOpacity(0.3),
+            color: isSelected ? color : color.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: category.color),
+            border: Border.all(color: color),
           ),
-          child: Text(
-            category.label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: Colors.white),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -173,11 +191,7 @@ class AddTaskDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskTypeButton(
-    TaskType type,
-    String title,
-    String description,
-  ) {
+  Widget _buildTaskTypeButton(TaskType type, String title, String description) {
     return Obx(() {
       final isSelected = selectedTaskType.value == type;
       return GestureDetector(
@@ -205,11 +219,7 @@ class AddTaskDialog extends StatelessWidget {
                   color: isSelected ? Colors.blue : Colors.transparent,
                 ),
                 child: isSelected
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 14,
-                      )
+                    ? const Icon(Icons.check, color: Colors.white, size: 14)
                     : null,
               ),
               const SizedBox(width: 12),
@@ -333,23 +343,42 @@ class AddTaskDialog extends StatelessWidget {
               const SizedBox(height: 16),
 
               // 2. Category Selection
-              _buildLabel('Category *'),
+              _buildLabel('Category (Optional)'),
               const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildCategoryChip(TaskCategory.health),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.work),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.exercise),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.learning),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.personal),
-                  ],
-                ),
+              GetBuilder<CategoryController>(
+                builder: (categoryController) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        // No category option
+                        _buildCategoryChip(
+                          '',
+                          'No Category',
+                          Colors.grey,
+                          Icons.block,
+                        ),
+                        const SizedBox(width: 8),
+                        // User's categories
+                        ...categoryController.categories.map((category) {
+                          final icon =
+                              CategoryIcons.icons[category.icon] ??
+                              Icons.category;
+                          final color = category.getColor();
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _buildCategoryChip(
+                              category.id,
+                              category.name,
+                              color,
+                              icon,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
 
@@ -431,78 +460,99 @@ class AddTaskDialog extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Target Value field (for integerTarget)
-              Obx(() => selectedTaskType.value == TaskType.integerTarget
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('Target Value *'),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: targetValueController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'e.g., 5 (for 5 glasses of water)',
-                            hintStyle: const TextStyle(color: Colors.white54),
-                            filled: true,
-                            fillColor: Colors.white10,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.borderColor),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.borderColor),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.blue, width: 2),
+              Obx(
+                () => selectedTaskType.value == TaskType.integerTarget
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel('Target Value *'),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: targetValueController,
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: 'e.g., 5 (for 5 glasses of water)',
+                              hintStyle: const TextStyle(color: Colors.white54),
+                              filled: true,
+                              fillColor: Colors.white10,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: AppColors.borderColor,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: AppColors.borderColor,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.blue,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    )
-                  : const SizedBox.shrink()),
+                          const SizedBox(height: 16),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
               // Timer Duration Selection (for timer type)
-              Obx(() => selectedTaskType.value == TaskType.timer
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('Timer Duration *'),
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () => _showTimePicker(context),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white10,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.borderColor),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.schedule, color: Colors.white70),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Obx(() => Text(
-                                    'Selected: ${_formatDuration(selectedTimerMinutes.value)}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                    ),
-                                  )),
+              Obx(
+                () => selectedTaskType.value == TaskType.timer
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel('Timer Duration *'),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () => _showTimePicker(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppColors.borderColor,
                                 ),
-                                const Icon(Icons.edit, color: Colors.blue),
-                              ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.schedule,
+                                    color: Colors.white70,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Obx(
+                                      () => Text(
+                                        'Selected: ${_formatDuration(selectedTimerMinutes.value)}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.edit, color: Colors.blue),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    )
-                  : const SizedBox.shrink()),
+                          const SizedBox(height: 16),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
               // Action Buttons
               Row(

@@ -7,7 +7,7 @@ class SplashController extends GetxController {
     // final String? onboardingCompeted = STService().getData(
     //   AuthConstants.onboardingCompletedKey,
     // );
-    final String? onboardingCompeted = null ;
+    final String? onboardingCompeted = null;
 
     // if (onboardingCompeted != null) {
     //   String? token = STService().getData(AuthConstants.tokenKey);
@@ -17,7 +17,7 @@ class SplashController extends GetxController {
     //     // Get.offAllNamed(AppRoutes.loginScreen);
     //   }
     // } else {
-      Get.offAllNamed(AppRoutes.mainBottomNavScreen);
+    Get.offAllNamed(AppRoutes.mainBottomNavScreen);
     // }
   }
 

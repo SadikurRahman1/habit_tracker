@@ -21,7 +21,5 @@ class AuthConstants {
   static bool isOnboardingCompleted = false;
   static bool isRemembered = false;
 
-
   // Onboarding
-
 }

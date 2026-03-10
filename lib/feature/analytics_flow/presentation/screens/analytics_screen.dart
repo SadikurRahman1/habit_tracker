@@ -26,9 +26,8 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final homeController = Get.find<HomeController>();
-    
+
     return GetBuilder<AnalyticsController>(
       init: AnalyticsController(),
       builder: (analyticsController) {
@@ -48,7 +47,7 @@ class AnalyticsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             // actions: [
             //   Padding(
             //     padding: const EdgeInsets.only(right: 16),
@@ -72,16 +71,16 @@ class AnalyticsScreen extends StatelessWidget {
             //     ),
             //   ),
             // ],
-             actions: [
-          // Calendar icon
-          GestureDetector(
-            onTap: () => _openCalendarBottomSheet(homeController),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Icon(Icons.calendar_today, color: AppColors.primary),
-            ),
-          ),
-        ],
+            actions: [
+              // Calendar icon
+              GestureDetector(
+                onTap: () => _openCalendarBottomSheet(homeController),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Icon(Icons.calendar_today, color: AppColors.primary),
+                ),
+              ),
+            ],
           ),
           body: SafeArea(
             child: Obx(() {

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class CategoryModel {
   final String id;
   final String name;
-  final String icon; // IconData name as string (e.g., 'favorite', 'fitness_center')
+  final String
+  icon; // IconData name as string (e.g., 'favorite', 'fitness_center')
   final String colorHex; // Store color as hex string
 
   CategoryModel({
@@ -15,12 +16,7 @@ class CategoryModel {
 
   // Convert to JSON
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'icon': icon,
-      'colorHex': colorHex,
-    };
+    return {'id': id, 'name': name, 'icon': icon, 'colorHex': colorHex};
   }
 
   // Create from JSON

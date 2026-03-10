@@ -36,9 +36,9 @@ class ScreenConfig {
 
     /// Special Handling for Tablet
     if (isTablet) {
-      scaleWidth *= 0.80;   // slightly reduce width scale (more natural UI)
+      scaleWidth *= 0.80; // slightly reduce width scale (more natural UI)
       scaleHeight *= 0.85;
-      scaleText *= 0.9;     // Tablet text slightly smaller
+      scaleText *= 0.9; // Tablet text slightly smaller
     }
 
     /// Special Handling for Desktop

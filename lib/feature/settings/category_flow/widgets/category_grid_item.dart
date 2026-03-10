@@ -23,10 +23,7 @@ class CategoryGridItem extends StatelessWidget {
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.15),
-          border: Border.all(
-            color: color,
-            width: 2,
-          ),
+          border: Border.all(color: color, width: 2),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -39,13 +36,7 @@ class CategoryGridItem extends StatelessWidget {
                 color: color.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
-              ),
+              child: Center(child: Icon(icon, color: color, size: 24)),
             ),
 
             // Category Name

@@ -5,9 +5,11 @@ extension StringExtensions on String {
 
   /// Convert to title case
   String toTitleCase() => split(" ")
-      .map((word) => word.isEmpty
-      ? word
-      : "${word[0].toUpperCase()}${word.substring(1).toLowerCase()}")
+      .map(
+        (word) => word.isEmpty
+            ? word
+            : "${word[0].toUpperCase()}${word.substring(1).toLowerCase()}",
+      )
       .join(" ");
 
   /// Check valid email

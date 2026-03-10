@@ -6,11 +6,6 @@ import '../../../settings/screens/settings_screen.dart';
 import '../controllers/bottom_nav_bar_controller.dart';
 import '../screens/bottom_nav_bar.dart';
 
-
-
-
-
-
 /// Main Home Screen with Bottom Navigation
 class MainBottomNavScreen extends StatefulWidget {
   const MainBottomNavScreen({super.key});
@@ -28,19 +23,13 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
     super.initState();
     controller = Get.find<BottomNavBarController>();
     // Initialize ChatBinding for ChatListScreen
-    screens = [
-      HomeScreen(),
-      const AnalyticsScreen(),
-      const SettingsScreen(),
-    ];
+    screens = [HomeScreen(), const AnalyticsScreen(), const SettingsScreen()];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(
-        () => screens[controller.selectedIndex.value],
-      ),
+      body: Obx(() => screens[controller.selectedIndex.value]),
       bottomNavigationBar: BottomNavBar(
         onTabChanged: (index) {
           // Handle tab change if needed
@@ -50,4 +39,3 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
     );
   }
 }
-

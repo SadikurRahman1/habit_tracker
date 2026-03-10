@@ -7,4 +7,3 @@ class OnboardingBinding implements Bindings {
     Get.lazyPut(() => OnboardingController());
   }
 }
-

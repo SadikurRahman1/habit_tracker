@@ -10,7 +10,10 @@ class LanguageService {
   /// Save entire locale
   static Future<void> saveLocale(Locale locale) async {
     await STService().saveData(languageCodeKey, locale.languageCode);
-    await STService().saveData(languageCountryCodeKey, locale.countryCode ?? '');
+    await STService().saveData(
+      languageCountryCodeKey,
+      locale.countryCode ?? '',
+    );
   }
 
   /// Get saved locale
@@ -31,7 +34,9 @@ class LanguageService {
   }
 
   /// Save only country code
-  static Future<void> saveLanguageCountryCode({required String countryKey}) async {
+  static Future<void> saveLanguageCountryCode({
+    required String countryKey,
+  }) async {
     await STService().saveData(languageCountryCodeKey, countryKey);
   }
 

@@ -18,4 +18,3 @@ class BottomNavBarBinding implements Bindings {
     Get.lazyPut(() => SettingsController());
   }
 }
-

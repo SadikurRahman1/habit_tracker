@@ -61,6 +61,8 @@ class HabitCreationFormContent extends StatelessWidget {
               onDaysChanged: formController.setRepeatDays,
             ),
             const SizedBox(height: 32),
+            _ReminderTimeSection(formController: formController),
+            const SizedBox(height: 32),
             _FormActionButtons(
               isEditMode: formController.isEditMode,
               onSubmit: onSubmit,
@@ -221,6 +223,108 @@ class _FormActionButtons extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _ReminderTimeSection extends StatelessWidget {
+  const _ReminderTimeSection({required this.formController});
+
+  final HabitCreationFormController formController;
+
+  String _displayTime(String hhmm) {
+    final parts = hhmm.split(':');
+    final hour24 = int.parse(parts[0]);
+    final minute = parts[1];
+    final period = hour24 >= 12 ? 'PM' : 'AM';
+    final hour12 = hour24 == 0 ? 12 : (hour24 > 12 ? hour24 - 12 : hour24);
+    return '$hour12:$minute $period';
+  }
+
+  Future<void> _addReminderTime(BuildContext context) async {
+    if (formController.notificationTimes.length >= 10) {
+      Get.snackbar(
+        'Limit Reached',
+        'You can set up to 10 reminder times.',
+        backgroundColor: AppColors.warning,
+        colorText: AppColors.white,
+      );
+      return;
+    }
+
+    final now = TimeOfDay.now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: now,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppColors.primary,
+              onPrimary: AppColors.white,
+              surface: AppColors.mainColor,
+              onSurface: AppColors.onMainColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked == null) return;
+
+    final value =
+        '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+
+    formController.addNotificationTime(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile.adaptive(
+          value: formController.reminderEnabled,
+          activeThumbColor: AppColors.primary,
+          activeTrackColor: AppColors.primary.withValues(alpha: 0.35),
+          title: Text(
+            'Reminder Time',
+            style: TextStyle(
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Text(
+            formController.reminderEnabled ? 'On' : 'Off (default)',
+            style: TextStyle(color: AppColors.secondaryText),
+          ),
+          onChanged: formController.setReminderEnabled,
+          contentPadding: EdgeInsets.zero,
+        ),
+        if (formController.reminderEnabled) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => _addReminderTime(context),
+            icon: const Icon(Icons.add_alarm),
+            label: const Text('Add Reminder Time'),
+          ),
+          const SizedBox(height: 8),
+          if (formController.notificationTimes.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: formController.notificationTimes.map((time) {
+                return Chip(
+                  label: Text(_displayTime(time)),
+                  onDeleted: () {
+                    formController.removeNotificationTime(time);
+                  },
+                );
+              }).toList(),
+            ),
+        ],
       ],
     );
   }

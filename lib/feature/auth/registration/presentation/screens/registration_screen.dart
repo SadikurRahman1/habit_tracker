@@ -30,7 +30,7 @@ class RegistrationScreen extends StatelessWidget {
               ),
               const ResponsiveSpace(30),
               AuthHeader(
-                title:  " Create Account",
+                title: " Create Account",
                 subTitle: 'Sign up to get started',
               ),
               const ResponsiveSpace(30),
@@ -71,7 +71,6 @@ class RegistrationScreen extends StatelessWidget {
                   //   keyboardType: TextInputType.phone,
                   //
                   // ),
-
                   const ResponsiveSpace(8),
 
                   // Terms & Conditions
@@ -107,7 +106,6 @@ class RegistrationScreen extends StatelessWidget {
                   //     // ),
                   //   ],
                   // ),
-
                   const ResponsiveSpace(40),
 
                   // Register Button

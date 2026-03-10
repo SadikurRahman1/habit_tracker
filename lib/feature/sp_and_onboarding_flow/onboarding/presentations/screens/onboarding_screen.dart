@@ -99,7 +99,8 @@ class OnboardingScreen extends StatelessWidget {
               child: Obx(
                 () => ResponsiveButton(
                   onTap: controller.nextPage,
-                  title: controller.currentPage.value ==
+                  title:
+                      controller.currentPage.value ==
                           controller.onboardingPages.length - 1
                       ? 'Get Started'
                       : 'Next',
@@ -116,5 +117,3 @@ class OnboardingScreen extends StatelessWidget {
     );
   }
 }
-
-

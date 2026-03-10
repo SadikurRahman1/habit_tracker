@@ -1,4 +1,3 @@
-
 import '../../../../../../core/exported_files/exported_file.dart';
 
 class ResponsiveSpace extends StatelessWidget {
@@ -11,10 +10,7 @@ class ResponsiveSpace extends StatelessWidget {
     final parent = context.findAncestorWidgetOfExactType<Flex>();
 
     if (parent == null) {
-      return SizedBox(
-        width: value.w,
-        height: value.h,
-      );
+      return SizedBox(width: value.w, height: value.h);
     }
 
     if (parent.direction == Axis.horizontal) {

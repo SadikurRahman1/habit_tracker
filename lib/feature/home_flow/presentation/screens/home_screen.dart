@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
           elevation: 0,
           foregroundColor: AppColors.white,
           icon: const Icon(Icons.add),
-          label: const Text('Create Habit'),
+          label: const Text('Add'),
         ),
       ),
       body: SafeArea(

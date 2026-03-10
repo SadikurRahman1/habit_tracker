@@ -59,10 +59,7 @@ class ResponsiveText extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: textWidget,
-      );
+      return GestureDetector(onTap: onTap, child: textWidget);
     }
 
     return textWidget;

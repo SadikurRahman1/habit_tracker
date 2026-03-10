@@ -11,7 +11,7 @@ class ResponsiveGridView extends StatelessWidget {
   final ScrollPhysics? physics;
   final IndexedWidgetBuilder itemBuilder;
 
-  const  ResponsiveGridView({
+  const ResponsiveGridView({
     super.key,
     required this.itemCount,
     required this.crossAxisCount,
@@ -41,7 +41,9 @@ class ResponsiveGridView extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         double width = constraints.maxWidth;
-        double itemWidth = (width - (crossAxisSpacing.w * (crossAxisCount - 1))) / crossAxisCount;
+        double itemWidth =
+            (width - (crossAxisSpacing.w * (crossAxisCount - 1))) /
+            crossAxisCount;
         double itemHeight = itemWidth * heightFactor;
         double aspectRatio = itemWidth / itemHeight;
 

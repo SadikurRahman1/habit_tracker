@@ -1,5 +1,3 @@
-
-
 import '../exported_files/exported_file.dart';
 
 class NoDataFound extends StatelessWidget {
@@ -21,9 +19,12 @@ class NoDataFound extends StatelessWidget {
         SizedBox(height: gap1),
         Image.asset(ImagePath.noData, height: imageHeight ?? 200),
         ResponsiveSpace(gap2 ?? 10),
-        ResponsiveText(text: message ?? "no_data_found",fontWeight: FontWeight.w700,
+        ResponsiveText(
+          text: message ?? "no_data_found",
+          fontWeight: FontWeight.w700,
           color: AppColors.mainColor,
-          textAlign: TextAlign.center,)
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

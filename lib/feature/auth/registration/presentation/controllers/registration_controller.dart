@@ -57,7 +57,10 @@ class RegistrationController extends GetxController {
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       MessageHelper().showWarning(
         title: "Error",
         message: "All fields are required",
@@ -141,17 +144,11 @@ class RegistrationController extends GetxController {
         DService().info("Token saved: ${result['user'].uid}");
 
         // Mark onboarding as completed
-        await stService.saveData(
-          AuthConstants.onboardingCompletedKey,
-          'true',
-        );
+        await stService.saveData(AuthConstants.onboardingCompletedKey, 'true');
         DService().info("Onboarding marked as completed");
 
         // Show success message
-        MessageHelper().showAlert(
-          title: "Success",
-          message: result['message'],
-        );
+        MessageHelper().showAlert(title: "Success", message: result['message']);
         DService().info("Success message shown");
 
         // Clear fields and navigate to home_flow

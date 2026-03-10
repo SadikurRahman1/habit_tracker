@@ -4,7 +4,7 @@ import '../constants/screen_config.dart';
 
 class CustomFilterChips extends StatelessWidget {
   final List<String> items;
-  final int selectedIndex; 
+  final int selectedIndex;
   final Function(int index) onSelected;
 
   const CustomFilterChips({
@@ -28,19 +28,26 @@ class CustomFilterChips extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onSelected(index), // Click korle parent ke janabe
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF00695C) : Colors.white,
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF00695C) : Colors.grey.shade300,
+                    color: isSelected
+                        ? const Color(0xFF00695C)
+                        : Colors.grey.shade300,
                   ),
                 ),
                 child: Text(
                   items[index],
                   style: TextStyle(
                     color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     fontSize: 14.sp,
                   ),
                 ),

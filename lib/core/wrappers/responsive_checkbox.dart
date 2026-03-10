@@ -1,4 +1,3 @@
-
 import '../../../../../../core/exported_files/exported_file.dart';
 
 class ResponsiveCheckbox extends StatelessWidget {
@@ -62,9 +61,9 @@ class ResponsiveCheckbox extends StatelessWidget {
           onChanged: onChanged,
           activeColor: activeColor ?? AppColors.primary,
           checkColor: checkColor ?? Colors.white,
-          shape: shape ??
-              RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4.w)),
+          shape:
+              shape ??
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.w)),
         ),
       ),
     );

@@ -33,7 +33,7 @@ class LoginController extends GetxController {
   }
 
   void gotoForgotPasswordScreen() {
-      // Get.toNamed(AppRoutes.forgotPasswordScreen);
+    // Get.toNamed(AppRoutes.forgotPasswordScreen);
   }
 
   void _gotoHomeScreen() {
@@ -69,7 +69,7 @@ class LoginController extends GetxController {
         final email = stService.getData(AuthConstants.savedEmail);
         final password = stService.getData(AuthConstants.savedPassword);
 
-        if (email != null ) {
+        if (email != null) {
           emailController.text = email;
         }
         if (password != null) {
@@ -158,10 +158,7 @@ class LoginController extends GetxController {
         DService().info("Token saved: ${result['user'].uid}");
 
         // Show success message
-        MessageHelper().showAlert(
-          title: "Success",
-          message: result['message'],
-        );
+        MessageHelper().showAlert(title: "Success", message: result['message']);
         DService().info("Success message shown");
 
         // Clear fields and navigate to home_flow
@@ -194,6 +191,4 @@ class LoginController extends GetxController {
       DService().info("=== LOGIN FINISHED ===");
     }
   }
-
-
 }

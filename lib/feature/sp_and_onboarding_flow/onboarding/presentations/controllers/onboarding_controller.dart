@@ -64,4 +64,3 @@ class OnboardingModel {
     required this.image,
   });
 }
-

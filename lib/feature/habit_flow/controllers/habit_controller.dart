@@ -41,13 +41,14 @@ class HabitController extends GetxController {
   }
 
   // Add new habit
-  bool addHabit({
+  HabitModel? addHabit({
     required String name,
     required HabitQuestionType questionType,
     required String categoryId,
     required List<bool> repeatDays,
     int targetValue = 0,
     int timeDurationMinutes = 0,
+    List<String> notificationTimes = const [],
   }) {
     if (name.trim().isEmpty) {
       Get.snackbar(
@@ -57,7 +58,7 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
     if (repeatDays.isEmpty || !repeatDays.any((day) => day)) {
@@ -68,7 +69,7 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
     // Validate numeric type
@@ -81,7 +82,7 @@ class HabitController extends GetxController {
           colorText: AppColors.white,
           backgroundColor: AppColors.orange,
         );
-        return false;
+        return null;
       }
     }
 
@@ -95,7 +96,7 @@ class HabitController extends GetxController {
           colorText: AppColors.white,
           backgroundColor: AppColors.orange,
         );
-        return false;
+        return null;
       }
     }
 
@@ -109,12 +110,13 @@ class HabitController extends GetxController {
       repeatDays: repeatDays,
       createdAt: DateTime.now(),
       isActive: true,
+      notificationTimes: notificationTimes,
     );
 
     habits.add(newHabit);
     _saveHabits();
 
-    return true;
+    return newHabit;
   }
 
   // Remove habit
@@ -124,7 +126,7 @@ class HabitController extends GetxController {
   }
 
   // Update habit
-  bool updateHabit({
+  HabitModel? updateHabit({
     required String habitId,
     required String name,
     required HabitQuestionType questionType,
@@ -132,6 +134,7 @@ class HabitController extends GetxController {
     required List<bool> repeatDays,
     int targetValue = 0,
     int timeDurationMinutes = 0,
+    List<String> notificationTimes = const [],
   }) {
     final index = habits.indexWhere((habit) => habit.id == habitId);
 
@@ -143,7 +146,7 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
     if (name.trim().isEmpty) {
@@ -154,7 +157,7 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
     if (repeatDays.isEmpty || !repeatDays.any((day) => day)) {
@@ -165,7 +168,7 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
     if (questionType == HabitQuestionType.numeric && targetValue <= 0) {
@@ -176,7 +179,7 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
     if (questionType == HabitQuestionType.time && timeDurationMinutes <= 0) {
@@ -187,10 +190,10 @@ class HabitController extends GetxController {
         colorText: AppColors.white,
         backgroundColor: AppColors.orange,
       );
-      return false;
+      return null;
     }
 
-    habits[index] = HabitModel(
+    final updatedHabit = HabitModel(
       id: habitId,
       name: name.trim(),
       questionType: questionType,
@@ -200,11 +203,12 @@ class HabitController extends GetxController {
       repeatDays: repeatDays,
       createdAt: habits[index].createdAt,
       isActive: habits[index].isActive,
-      notificationTimes: habits[index].notificationTimes,
+      notificationTimes: notificationTimes,
     );
+    habits[index] = updatedHabit;
     _saveHabits();
 
-    return true;
+    return updatedHabit;
   }
 
   // Update habit directly (for notification times, etc.)

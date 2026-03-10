@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-
 class ShimmerLayout extends StatelessWidget {
   final List<String> layout; // [h10w20s10, x3h10w30s3]
   final Color baseColor;
@@ -61,7 +60,9 @@ class ShimmerLayout extends StatelessWidget {
       if (match != null) {
         int count = int.parse(match.group(1)!);
         double h = double.parse(match.group(2)!);
-        double? w = match.group(3) != null ? double.parse(match.group(3)!) : null;
+        double? w = match.group(3) != null
+            ? double.parse(match.group(3)!)
+            : null;
 
         return Column(
           children: List.generate(count, (index) {
@@ -74,18 +75,18 @@ class ShimmerLayout extends StatelessWidget {
       }
     }
 
-
     // Simple box: h10w20
     // Simple box: h10 or h10w20
     if (desc.startsWith('h')) {
       final match = RegExp(r'h(\d+)(?:w(\d+))?').firstMatch(desc);
       if (match != null) {
         double h = double.parse(match.group(1)!);
-        double? w = match.group(2) != null ? double.parse(match.group(2)!) : null;
+        double? w = match.group(2) != null
+            ? double.parse(match.group(2)!)
+            : null;
         return _shimmerBox(h, w);
       }
     }
-
 
     // fallback
     return const SizedBox.shrink();

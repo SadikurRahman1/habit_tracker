@@ -174,7 +174,7 @@ class SettingsScreen extends StatelessWidget {
               color: AppColors.onMainColor,
             ),
           ),
-        centerTitle: true,
+          centerTitle: true,
         ),
         body: SingleChildScrollView(
           child: Padding(
@@ -183,7 +183,10 @@ class SettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.overlayColor,
                     borderRadius: BorderRadius.circular(8),

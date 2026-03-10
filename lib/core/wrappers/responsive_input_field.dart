@@ -152,37 +152,43 @@ class _RInputFieldState extends State<ResponsiveInputField> {
               labelText: widget.labelText,
               hintStyle: widget.hintStyle ?? _defaultStyle(),
               labelStyle:
-              widget.labelStyle ?? _defaultStyle(color: Colors.grey.shade700),
+                  widget.labelStyle ??
+                  _defaultStyle(color: Colors.grey.shade700),
 
               border: _outlineInputBorder(
-                  widget.borderColor ?? Colors.grey.withValues(alpha: .3)),
+                widget.borderColor ?? Colors.grey.withValues(alpha: .3),
+              ),
               enabledBorder: _outlineInputBorder(
-                  widget.borderColor ?? Colors.grey.withValues(alpha: .3)),
+                widget.borderColor ?? Colors.grey.withValues(alpha: .3),
+              ),
               focusedBorder: _outlineInputBorder(
-                  widget.focusedBorderColor ?? const Color(0xFFD1D1D1)),
-              errorBorder:
-              _outlineInputBorder(widget.errorBorderColor ?? Colors.red),
-              disabledBorder:
-              _outlineInputBorder(Colors.grey.withValues(alpha: .2)),
+                widget.focusedBorderColor ?? const Color(0xFFD1D1D1),
+              ),
+              errorBorder: _outlineInputBorder(
+                widget.errorBorderColor ?? Colors.red,
+              ),
+              disabledBorder: _outlineInputBorder(
+                Colors.grey.withValues(alpha: .2),
+              ),
 
               prefixIcon: widget.prefixIcon,
               suffixIcon: widget.obscureText
                   ? IconButton(
-                icon: Icon(
-                  isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: const Color(0xFF6B6B6B),
-                  size: 20.w,
-                ),
-                onPressed: () =>
-                _obscureNotifier.value = !isObscure,
-              )
+                      icon: Icon(
+                        isObscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: const Color(0xFF6B6B6B),
+                        size: 20.w,
+                      ),
+                      onPressed: () => _obscureNotifier.value = !isObscure,
+                    )
                   : widget.suffixIcon,
               filled: true,
               fillColor: widget.fillColor ?? Colors.white,
             ),
           ),
         );
-
       },
     );
   }

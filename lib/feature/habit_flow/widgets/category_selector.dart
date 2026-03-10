@@ -290,10 +290,12 @@ class CategorySelector extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 35,
+                        height: 35,
                         decoration: BoxDecoration(
-                          color: selectedCategory.getColor().withOpacity(0.2),
+                          color: selectedCategory.getColor().withValues(
+                            alpha: .2,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -316,11 +318,14 @@ class CategorySelector extends StatelessWidget {
                     ],
                   ),
                 ] else ...[
-                  Text(
-                    'No category selected',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.secondaryText,
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text(
+                      'No category selected',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.secondaryText,
+                      ),
                     ),
                   ),
                 ],

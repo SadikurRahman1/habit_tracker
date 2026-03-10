@@ -22,7 +22,7 @@ class CategoryController extends GetxController {
     try {
       isLoading.value = true;
       final saved = _storage.read(_categoriesKey);
-      
+
       if (saved != null && saved is List && saved.isNotEmpty) {
         final categoryList = saved
             .map((item) => CategoryModel.fromJson(item as Map<String, dynamic>))
@@ -147,7 +147,7 @@ class CategoryController extends GetxController {
     required String colorHex,
   }) {
     final index = categories.indexWhere((cat) => cat.id == categoryId);
-    
+
     if (index != -1) {
       categories[index] = CategoryModel(
         id: categoryId,
@@ -156,7 +156,7 @@ class CategoryController extends GetxController {
         colorHex: colorHex,
       );
       _saveCategories();
-      
+
       Get.snackbar(
         'Success',
         'Category updated successfully',
@@ -184,9 +184,9 @@ class CategoryController extends GetxController {
 
   // Check if category name exists
   bool categoryNameExists(String name, {String? excludeId}) {
-    return categories.any((cat) => 
-      cat.name.toLowerCase() == name.toLowerCase() && 
-      cat.id != excludeId
+    return categories.any(
+      (cat) =>
+          cat.name.toLowerCase() == name.toLowerCase() && cat.id != excludeId,
     );
   }
 }

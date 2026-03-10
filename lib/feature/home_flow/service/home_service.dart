@@ -21,7 +21,7 @@ class HomeService {
     try {
       final jsonString = _storage.read(_tasksKey);
       if (jsonString == null) return [];
-      
+
       final jsonList = jsonDecode(jsonString) as List;
       return jsonList.map((json) => _taskFromJson(json)).toList();
     } catch (e) {
@@ -35,13 +35,15 @@ class HomeService {
     return {
       'id': task.id,
       'description': task.description,
-      'category': task.category.toString().split('.').last,
+      'categoryId': task.categoryId, // Store categoryId instead of enum
       'priority': task.priority.toString().split('.').last,
       'taskType': task.taskType.toString().split('.').last,
       'question': task.question,
       'targetValue': task.targetValue,
       'selectedDays': task.selectedDays,
       'notificationEnabled': task.notificationEnabled,
+      'notificationTimes': task.notificationTimes,
+      'progressByDate': task.progressByDate,
       'isCompleted': task.isCompleted,
       'answerText': task.answerText,
       'currentProgress': task.currentProgress,
@@ -58,17 +60,31 @@ class HomeService {
     if (json['selectedDays'] != null) {
       days = (json['selectedDays'] as List).map((e) => e as int).toList();
     }
-    
+
+    final notificationTimes = json['notificationTimes'] != null
+        ? (json['notificationTimes'] as List).map((e) => '$e').toList()
+        : <String>[];
+
+    final progressByDate = <String, int>{};
+    if (json['progressByDate'] != null) {
+      final raw = json['progressByDate'] as Map<String, dynamic>;
+      raw.forEach((key, value) {
+        progressByDate[key] = (value as num).toInt();
+      });
+    }
+
     return Task(
       id: json['id'] as String,
       description: json['description'] as String,
-      category: _getCategoryFromString(json['category'] as String? ?? 'other'),
+      categoryId: json['categoryId'] as String? ?? '', // Load categoryId
       priority: _getPriorityFromString(json['priority'] as String),
       taskType: _getTaskTypeFromString(json['taskType'] as String),
       question: json['question'] as String?,
       targetValue: json['targetValue'] as int? ?? 1,
       selectedDays: days,
       notificationEnabled: json['notificationEnabled'] as bool? ?? false,
+      notificationTimes: notificationTimes,
+      progressByDate: progressByDate,
       isCompleted: json['isCompleted'] as bool? ?? false,
       answerText: json['answerText'] as String?,
       currentProgress: json['currentProgress'] as int? ?? 0,
@@ -76,23 +92,6 @@ class HomeService {
       isTimerActive: json['isTimerActive'] as bool? ?? false,
       timerRemainingSeconds: json['timerRemainingSeconds'] as int? ?? 0,
     );
-  }
-
-  TaskCategory _getCategoryFromString(String category) {
-    switch (category) {
-      case 'health':
-        return TaskCategory.health;
-      case 'work':
-        return TaskCategory.work;
-      case 'exercise':
-        return TaskCategory.exercise;
-      case 'learning':
-        return TaskCategory.learning;
-      case 'personal':
-        return TaskCategory.personal;
-      default:
-        return TaskCategory.other;
-    }
   }
 
   TaskPriority _getPriorityFromString(String priority) {

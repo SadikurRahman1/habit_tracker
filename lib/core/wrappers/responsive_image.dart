@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,9 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../../../core/exported_files/exported_file.dart';
 
 // Conditional import
-import 'file_io_stub.dart'
-if (dart.library.io) 'file_io_mobile.dart';
-
+import 'file_io_stub.dart' if (dart.library.io) 'file_io_mobile.dart';
 
 class ResponsiveImage extends StatelessWidget {
   final String path;
@@ -22,7 +19,7 @@ class ResponsiveImage extends StatelessWidget {
   final double borderRadiusBottom;
   final Color? color;
 
-   ResponsiveImage({
+  ResponsiveImage({
     super.key,
     required this.path,
     this.width,
@@ -46,7 +43,7 @@ class ResponsiveImage extends StatelessWidget {
     final value = size ?? width ?? 50.0;
     return (value.isFinite && value > 0) ? value : 50.0;
   }
-  
+
   double get _height {
     final value = size ?? height ?? 50.0;
     return (value.isFinite && value > 0) ? value : 50.0;

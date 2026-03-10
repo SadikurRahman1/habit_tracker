@@ -148,7 +148,8 @@ class NetworkCaller {
       request.fields.addAll(fields);
       if (files != null) request.files.addAll(files);
 
-      if (showLog) debugPrint('$cyan🧜‍♂️ [$actionName] MULTIPART $method: $uri$reset');
+      if (showLog)
+        debugPrint('$cyan🧜‍♂️ [$actionName] MULTIPART $method: $uri$reset');
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);

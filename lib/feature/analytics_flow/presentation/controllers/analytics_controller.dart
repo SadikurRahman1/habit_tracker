@@ -93,7 +93,7 @@ class AnalyticsController extends GetxController {
     completedHabits.value = habitCompleted;
     totalTasks.value = tasksForDate.length;
     completedTasks.value = tasksForDate
-        .where((task) => task.isFullyCompleted)
+        .where((task) => task.isCompletedForDate(date))
         .length;
 
     final totalItems = totalHabits.value + totalTasks.value;
@@ -108,13 +108,23 @@ class AnalyticsController extends GetxController {
   }
 
   void _computeWeeklyBreakdown() {
-    final monday = _startOfWeek(selectedDate.value);
+    final weekStart = _startOfWeek(selectedDate.value);
     final breakdown = <DayCompletionData>[];
 
     for (int index = 0; index < 7; index++) {
-      final day = monday.add(Duration(days: index));
-      final total = _habitController.getHabitsForDate(day).length;
-      final completed = _habitController.getCompletedCountForDate(day);
+      final day = weekStart.add(Duration(days: index));
+      final totalHabits = _habitController.getHabitsForDate(day).length;
+      final completedHabits = _habitController.getCompletedCountForDate(day);
+
+      final tasksForDay = _homeController.tasks
+          .where((task) => task.selectedDays.contains(day.weekday))
+          .toList();
+      final completedTasks = tasksForDay
+          .where((task) => task.isCompletedForDate(day))
+          .length;
+
+      final total = totalHabits + tasksForDay.length;
+      final completed = completedHabits + completedTasks;
 
       breakdown.add(
         DayCompletionData(
@@ -148,10 +158,22 @@ class AnalyticsController extends GetxController {
     final endDate = _normalizeDate(end);
 
     while (!cursor.isAfter(endDate)) {
-      final total = _habitController.getHabitsForDate(cursor).length;
+      final totalHabits = _habitController.getHabitsForDate(cursor).length;
+      final completedHabits = _habitController.getCompletedCountForDate(cursor);
+
+      final tasksForDay = _homeController.tasks
+          .where((task) => task.selectedDays.contains(cursor.weekday))
+          .toList();
+      final completedTasks = tasksForDay
+          .where((task) => task.isCompletedForDate(cursor))
+          .length;
+
+      final total = totalHabits + tasksForDay.length;
+      final completed = completedHabits + completedTasks;
+
       if (total > 0) {
         totalSum += total;
-        completedSum += _habitController.getCompletedCountForDate(cursor);
+        completedSum += completed;
       }
 
       cursor = cursor.add(const Duration(days: 1));
@@ -286,11 +308,11 @@ class AnalyticsController extends GetxController {
   }
 
   DateTime _startOfWeek(DateTime date) {
-    return _normalizeDate(date).subtract(Duration(days: date.weekday - 1));
+    return _normalizeDate(date).subtract(Duration(days: date.weekday % 7));
   }
 
   String _dayLabel(int weekday) {
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return labels[weekday - 1];
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return labels[weekday % 7];
   }
 }

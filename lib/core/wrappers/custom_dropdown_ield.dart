@@ -1,4 +1,3 @@
-
 import '../exported_files/exported_file.dart';
 
 class CustomDropdownField extends StatelessWidget {
@@ -22,9 +21,9 @@ class CustomDropdownField extends StatelessWidget {
       children: [
         ResponsiveText(
           text: title,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
         ),
         ResponsiveSpace(8),
         ResponsiveContainer(
@@ -45,7 +44,10 @@ class CustomDropdownField extends StatelessWidget {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.blueGrey),
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.blueGrey,
+              ),
               items: items.map((String item) {
                 return DropdownMenuItem(
                   value: item,

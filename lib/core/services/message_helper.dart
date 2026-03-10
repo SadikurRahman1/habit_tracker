@@ -107,8 +107,8 @@ class MessageHelper {
 
     // Use safe screenWidth with fallback to MediaQuery
     final screenWidth = ScreenConfig.screenWidth > 0
-      ? ScreenConfig.screenWidth
-      : MediaQuery.of(context).size.width;
+        ? ScreenConfig.screenWidth
+        : MediaQuery.of(context).size.width;
 
     /// Responsive padding
     final horizontalPadding = screenWidth * 0.05;
