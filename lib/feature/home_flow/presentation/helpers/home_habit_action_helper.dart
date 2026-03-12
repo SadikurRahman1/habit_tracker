@@ -184,7 +184,7 @@ class HomeHabitActionHelper {
                       habit.id,
                     );
                     habitController.removeHabit(habit.id);
-                    Get.back();
+                    Get.close(2); // closes confirm dialog + action bottom sheet
                     Get.snackbar(
                       'Deleted',
                       '${habit.name} has been deleted',

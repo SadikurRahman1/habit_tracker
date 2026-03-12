@@ -99,10 +99,7 @@ class TaskActionBottomSheet extends StatelessWidget {
             icon: Icons.delete,
             title: 'Delete Task',
             color: Colors.red,
-            onTap: () {
-              Get.back();
-              onDelete();
-            },
+            onTap: () => onDelete(),
           ),
 
           const SizedBox(height: 20),

@@ -103,7 +103,7 @@ class HomeBodyWidget extends StatelessWidget {
             onPressed: () async {
               await LocalNotificationService.cancelTaskNotifications(task.id);
               await homeController.deleteTask(task.id);
-              Get.back();
+              Get.close(2); // closes confirm dialog + action bottom sheet
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),

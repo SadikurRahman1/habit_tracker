@@ -74,13 +74,13 @@ class BottomNavBar extends StatelessWidget {
           items: List.generate(
             items.length,
             (index) => BottomNavigationBarItem(
-              icon: ResponsiveIcon(
-                icon: items[index].inactiveIcon,
-                size: 24,
+              icon: Icon(
+                items[index].inactiveIcon,
+                size: 30,
                 color: AppColors.inActiveColor,
               ),
-              activeIcon: ResponsiveIcon(
-                icon: items[index].activeIcon,
+              activeIcon: Icon(
+                items[index].activeIcon,
                 size: 24,
                 color: AppColors.primary,
               ),

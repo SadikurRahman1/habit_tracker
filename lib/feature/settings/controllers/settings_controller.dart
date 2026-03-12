@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:printing/printing.dart';
 
 import '../../habit_flow/controllers/habit_controller.dart';
@@ -9,12 +10,14 @@ import '../services/monthly_report_pdf_service.dart';
 
 class SettingsController extends GetxController {
   final _storage = GetStorage();
+  final InAppReview _inAppReview = InAppReview.instance;
   static const String _themeKey = 'theme_mode';
   final MonthlyReportPdfService _monthlyReportPdfService =
       MonthlyReportPdfService();
 
   final isDarkMode = true.obs;
   final isGeneratingMonthlyReport = false.obs;
+  final isLaunchingReviewFlow = false.obs;
   final selectedReportMonth = DateTime(
     DateTime.now().year,
     DateTime.now().month,
@@ -103,6 +106,50 @@ class SettingsController extends GetxController {
       );
     } finally {
       isGeneratingMonthlyReport.value = false;
+    }
+  }
+
+  Future<void> requestPlayStoreReview() async {
+    if (isLaunchingReviewFlow.value) return;
+
+    if (!GetPlatform.isAndroid) {
+      Get.snackbar(
+        'Unavailable',
+        'Play Store review is available only on Android devices.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    isLaunchingReviewFlow.value = true;
+
+    try {
+      final canRequestInAppReview = await _inAppReview.isAvailable();
+
+      if (!canRequestInAppReview) {
+        Get.snackbar(
+          'Unavailable',
+          'In-app review is not available right now. Please try again later.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      await _inAppReview.requestReview();
+    } catch (_) {
+      Get.snackbar(
+        'Unavailable',
+        'Could not open in-app review right now. Please try again later.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLaunchingReviewFlow.value = false;
     }
   }
 

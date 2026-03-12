@@ -349,6 +349,60 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
+                if (GetPlatform.isAndroid) ...[
+                  GestureDetector(
+                    onTap: controller.isLaunchingReviewFlow.value
+                        ? null
+                        : controller.requestPlayStoreReview,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.overlayColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.borderColor),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star_rate_rounded,
+                                color: Colors.amber,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Rate on Play Store',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          controller.isLaunchingReviewFlow.value
+                              ? SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: textSecondary,
+                                  size: 18,
+                                ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
                 Container(
                   padding: const EdgeInsets.all(12),
                   width: double.infinity,

@@ -1,5 +1,4 @@
 import 'package:habit/feature/analytics_flow/presentation/screens/analytics_screen.dart';
-
 import '../../../../../../../core/exported_files/exported_file.dart';
 import '../../../home_flow/presentation/screens/home_screen.dart';
 import '../../../settings/screens/settings_screen.dart';
@@ -33,7 +32,6 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
       bottomNavigationBar: BottomNavBar(
         onTabChanged: (index) {
           // Handle tab change if needed
-          DService().info('Tab changed to: $index');
         },
       ),
     );

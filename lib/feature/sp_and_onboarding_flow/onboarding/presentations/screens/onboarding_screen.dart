@@ -10,8 +10,9 @@ class OnboardingScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.mainColor,
-      body: CommonBody(
-        widget: Column(
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
           children: [
             // Skip button
             Padding(
@@ -40,10 +41,11 @@ class OnboardingScreen extends StatelessWidget {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ResponsiveImage(
-                        path: page.image,
+                      Image.asset(
+                       page.image,
                         fit: BoxFit.contain,
-                        size: 250,
+                       height: 250,
+                        width: 250,
                       ),
                       const SizedBox(height: 40),
                       ResponsiveText(

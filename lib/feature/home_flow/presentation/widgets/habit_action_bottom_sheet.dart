@@ -94,10 +94,7 @@ class HabitActionBottomSheet extends StatelessWidget {
             icon: Icons.delete,
             title: 'Delete Habit',
             color: Colors.red,
-            onTap: () {
-              Get.back();
-              onDelete();
-            },
+            onTap: () => onDelete(),
           ),
 
           const SizedBox(height: 20),
