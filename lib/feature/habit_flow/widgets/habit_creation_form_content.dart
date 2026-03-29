@@ -27,8 +27,8 @@ class HabitCreationFormContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _RequiredFieldsBanner(),
-            const SizedBox(height: 24),
+            // const _RequiredFieldsBanner(),
+            // const SizedBox(height: 24),
             _QuestionTypeSection(formController: formController),
             const SizedBox(height: 24),
             _HabitNameSection(formController: formController),

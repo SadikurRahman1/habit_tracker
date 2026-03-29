@@ -160,12 +160,9 @@ class HomeBodyWidget extends StatelessWidget {
       final availableCategories = homeController
           .getAvailableCategoriesForSelectedDate();
       final totalHabits = homeController.getTotalHabitsForSelectedDate();
-      final completedHabits = homeController
-          .getCompletedHabitsForSelectedDate();
       final totalTasks = tasks.length;
-      final completedTasks = homeController.getCompletedTasksForSelectedDay();
       final totalItems = totalHabits + totalTasks;
-      final completedItems = completedHabits + completedTasks;
+      final overallProgress = homeController.getOverallProgressForSelectedDate();
 
       if (!hasCategorizedItems &&
           homeController.selectedCategoryId.value != null) {
@@ -194,8 +191,8 @@ class HomeBodyWidget extends StatelessWidget {
             ),
           if (totalItems > 0)
             ProgressBarWidget(
-              completedCount: completedItems,
-              totalCount: totalItems,
+              progressRatio: overallProgress,
+              totalItems: totalItems,
             ),
           Expanded(
             child: habits.isEmpty && tasks.isEmpty

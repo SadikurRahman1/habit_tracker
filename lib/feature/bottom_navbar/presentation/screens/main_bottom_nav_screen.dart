@@ -6,27 +6,19 @@ import '../controllers/bottom_nav_bar_controller.dart';
 import '../screens/bottom_nav_bar.dart';
 
 /// Main Home Screen with Bottom Navigation
-class MainBottomNavScreen extends StatefulWidget {
+class MainBottomNavScreen extends StatelessWidget {
   const MainBottomNavScreen({super.key});
 
-  @override
-  State<MainBottomNavScreen> createState() => _MainBottomNavScreenState();
-}
-
-class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
-  late final BottomNavBarController controller;
-  late final List<Widget> screens;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = Get.find<BottomNavBarController>();
-    // Initialize ChatBinding for ChatListScreen
-    screens = [HomeScreen(), const AnalyticsScreen(), const SettingsScreen()];
-  }
+  List<Widget> get screens => [
+    HomeScreen(),
+    const AnalyticsScreen(),
+    const SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<BottomNavBarController>();
+
     return Scaffold(
       body: Obx(() => screens[controller.selectedIndex.value]),
       bottomNavigationBar: BottomNavBar(

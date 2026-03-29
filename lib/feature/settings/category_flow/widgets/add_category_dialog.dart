@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:habit/core/constants/app_colors.dart';
 import 'package:habit/core/constants/category_icons.dart';
 
-class AddCategoryDialog extends StatefulWidget {
+class AddCategoryDialog extends StatelessWidget {
   final Function(String name, String icon, String colorHex) onAdd;
+  final RxString _name = ''.obs;
+  final RxString _selectedIcon = 'favorite'.obs;
+  final RxString _selectedColorHex = '#FF6B6B'.obs; // Default red color
 
-  const AddCategoryDialog({Key? key, required this.onAdd}) : super(key: key);
-
-  @override
-  State<AddCategoryDialog> createState() => _AddCategoryDialogState();
-}
-
-class _AddCategoryDialogState extends State<AddCategoryDialog> {
-  final nameController = TextEditingController();
-  String selectedIcon = 'favorite';
-  String selectedColorHex = '#FF6B6B'; // Default red color
+  AddCategoryDialog({Key? key, required this.onAdd}) : super(key: key);
 
   final List<String> colorOptions = [
     '#FF6B6B', // Red
@@ -35,14 +30,8 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
     '#16A085', // Green Sea
   ];
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
-  }
-
-  void _handleAdd() {
-    if (nameController.text.isEmpty) {
+  void _handleAdd(BuildContext context) {
+    if (_name.value.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a category name'),
@@ -52,7 +41,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
       return;
     }
 
-    widget.onAdd(nameController.text, selectedIcon, selectedColorHex);
+    onAdd(_name.value.trim(), _selectedIcon.value, _selectedColorHex.value);
     Navigator.pop(context);
   }
 
@@ -90,7 +79,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: nameController,
+                onChanged: (value) => _name.value = value,
                 style: TextStyle(color: AppColors.onMainColor),
                 decoration: InputDecoration(
                   hintText: 'e.g., Hobby, Travel, Health',
@@ -125,41 +114,41 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
               const SizedBox(height: 12),
               SizedBox(
                 height: 60,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: CategoryIcons.getIconsList().map((entry) {
-                    final isSelected = selectedIcon == entry.key;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedIcon = entry.key;
-                        });
-                      },
-                      child: Container(
-                        width: 60,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.blue.withOpacity(0.3)
-                              : AppColors.inputFillColor,
-                          border: Border.all(
+                child: Obx(
+                  () => ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: CategoryIcons.getIconsList().map((entry) {
+                      final isSelected = _selectedIcon.value == entry.key;
+                      return GestureDetector(
+                        onTap: () {
+                          _selectedIcon.value = entry.key;
+                        },
+                        child: Container(
+                          width: 60,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.blue
-                                : AppColors.borderColor,
-                            width: isSelected ? 2 : 1,
+                                ? Colors.blue.withValues(alpha: 0.3)
+                                : AppColors.inputFillColor,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.blue
+                                  : AppColors.borderColor,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            entry.value,
-                            color: AppColors.onMainColor,
-                            size: 32,
+                          child: Center(
+                            child: Icon(
+                              entry.value,
+                              color: AppColors.onMainColor,
+                              size: 32,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -174,46 +163,46 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                 ),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: colorOptions.map((colorHex) {
-                  final isSelected = selectedColorHex == colorHex;
-                  final color = Color(
-                    int.parse(colorHex.replaceFirst('#', '0xff')),
-                  );
+              Obx(
+                () => Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: colorOptions.map((colorHex) {
+                    final isSelected = _selectedColorHex.value == colorHex;
+                    final color = Color(
+                      int.parse(colorHex.replaceFirst('#', '0xff')),
+                    );
 
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedColorHex = colorHex;
-                      });
-                    },
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.white
-                              : Colors.transparent,
-                          width: isSelected ? 3 : 0,
+                    return GestureDetector(
+                      onTap: () {
+                        _selectedColorHex.value = colorHex;
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.white
+                                : Colors.transparent,
+                            width: isSelected ? 3 : 0,
+                          ),
                         ),
+                        child: isSelected
+                            ? const Center(
+                                child: Icon(
+                                  Icons.check,
+                                  color: AppColors.white,
+                                  size: 24,
+                                ),
+                              )
+                            : null,
                       ),
-                      child: isSelected
-                          ? const Center(
-                              child: Icon(
-                                Icons.check,
-                                color: AppColors.white,
-                                size: 24,
-                              ),
-                            )
-                          : null,
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -234,7 +223,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: _handleAdd,
+                    onPressed: () => _handleAdd(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(

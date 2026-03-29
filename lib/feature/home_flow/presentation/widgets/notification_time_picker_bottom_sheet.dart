@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:habit/core/constants/app_colors.dart';
 
-class NotificationTimePickerBottomSheet extends StatefulWidget {
+class NotificationTimePickerBottomSheet extends StatelessWidget {
   final List<String> initialTimes; // Times in "HH:mm" format
   final String habitName;
 
@@ -12,22 +12,7 @@ class NotificationTimePickerBottomSheet extends StatefulWidget {
     required this.habitName,
   }) : super(key: key);
 
-  @override
-  State<NotificationTimePickerBottomSheet> createState() =>
-      _NotificationTimePickerBottomSheetState();
-}
-
-class _NotificationTimePickerBottomSheetState
-    extends State<NotificationTimePickerBottomSheet> {
-  late List<String> selectedTimes;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedTimes = List.from(widget.initialTimes);
-  }
-
-  Future<void> _addTime() async {
+  Future<void> _addTime(BuildContext context, RxList<String> selectedTimes) async {
     if (selectedTimes.length >= 10) {
       Get.snackbar(
         'Limit Reached',
@@ -62,18 +47,16 @@ class _NotificationTimePickerBottomSheetState
           '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}';
 
       if (!selectedTimes.contains(timeString)) {
-        setState(() {
-          selectedTimes.add(timeString);
-          selectedTimes.sort(); // Sort times chronologically
-        });
+        selectedTimes.add(timeString);
+        selectedTimes.sort();
+        selectedTimes.refresh();
       }
     }
   }
 
-  void _removeTime(String time) {
-    setState(() {
-      selectedTimes.remove(time);
-    });
+  void _removeTime(RxList<String> selectedTimes, String time) {
+    selectedTimes.remove(time);
+    selectedTimes.refresh();
   }
 
   String _formatTime(String time) {
@@ -87,6 +70,8 @@ class _NotificationTimePickerBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final selectedTimes = initialTimes.toList().obs;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.mainColor,
@@ -131,7 +116,7 @@ class _NotificationTimePickerBottomSheetState
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.habitName,
+                          habitName,
                           style: TextStyle(
                             color: AppColors.onMainSecondary,
                             fontSize: 14,
@@ -163,7 +148,7 @@ class _NotificationTimePickerBottomSheetState
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ElevatedButton.icon(
-                  onPressed: _addTime,
+                  onPressed: () => _addTime(context, selectedTimes),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -187,102 +172,117 @@ class _NotificationTimePickerBottomSheetState
               const SizedBox(height: 16),
 
               // Selected times list
-              if (selectedTimes.isNotEmpty) ...[
-                Text(
-                  'Active Reminders (${selectedTimes.length})',
-                  style: TextStyle(
-                    color: AppColors.onMainSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 300),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: selectedTimes.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final time = selectedTimes[index];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.overlayColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.borderColor),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.notifications_active,
-                                color: AppColors.primary,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _formatTime(time),
-                                style: TextStyle(
-                                  color: AppColors.onMainColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _removeTime(time),
-                              icon: Icon(
-                                Icons.delete_outline,
-                                color: AppColors.danger,
-                                size: 22,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ] else ...[
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.overlayColor,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderColor),
-                  ),
-                  child: Column(
+              Obx(() {
+                if (selectedTimes.isNotEmpty) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.alarm_add,
-                        size: 48,
-                        color: AppColors.inActiveColor,
-                      ),
-                      const SizedBox(height: 8),
                       Text(
-                        'No reminders set',
+                        'Active Reminders (${selectedTimes.length})',
                         style: TextStyle(
                           color: AppColors.onMainSecondary,
-                          fontSize: 14,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: selectedTimes.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final time = selectedTimes[index];
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.overlayColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.borderColor),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.notifications_active,
+                                      color: AppColors.primary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _formatTime(time),
+                                      style: TextStyle(
+                                        color: AppColors.onMainColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () =>
+                                        _removeTime(selectedTimes, time),
+                                    icon: Icon(
+                                      Icons.delete_outline,
+                                      color: AppColors.danger,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.overlayColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.borderColor),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.alarm_add,
+                            size: 48,
+                            color: AppColors.inActiveColor,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No reminders set',
+                            style: TextStyle(
+                              color: AppColors.onMainSecondary,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }),
 
               // Save button
               Row(
@@ -319,7 +319,7 @@ class _NotificationTimePickerBottomSheetState
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ElevatedButton(
-                        onPressed: () => Get.back(result: selectedTimes),
+                        onPressed: () => Get.back(result: selectedTimes.toList()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,

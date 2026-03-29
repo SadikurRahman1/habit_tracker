@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:habit/core/constants/app_colors.dart';
 
 class ProgressBarWidget extends StatelessWidget {
-  final int completedCount;
-  final int totalCount;
+  final double progressRatio;
+  final int totalItems;
 
   const ProgressBarWidget({
     Key? key,
-    required this.completedCount,
-    required this.totalCount,
+    required this.progressRatio,
+    required this.totalItems,
   }) : super(key: key);
 
   double get _percentage {
-    if (totalCount == 0) return 0;
-    return (completedCount / totalCount).clamp(0.0, 1.0);
+    if (totalItems == 0) return 0;
+    return progressRatio.clamp(0.0, 1.0);
+  }
+
+  String get _progressSummary {
+    final equivalentCompleted = _percentage * totalItems;
+    return '${equivalentCompleted.toStringAsFixed(1)} of $totalItems items progress';
   }
 
   @override
@@ -76,7 +81,7 @@ class ProgressBarWidget extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '$completedCount of $totalCount habits completed',
+            _progressSummary,
             style: TextStyle(
               color: AppColors.white.withValues(alpha: 0.9),
               fontSize: 13,

@@ -23,6 +23,7 @@ class HomeController extends GetxController {
   final _timeRunningByHabitDate = <String, bool>{}.obs;
   final Map<String, Timer> _timeTickers = {};
   int _lastTimerNotificationSyncSecond = -1;
+  int _timerNotificationSyncRequestId = 0;
 
   HabitController get habitController => Get.find<HabitController>();
   CategoryController get categoryController => Get.find<CategoryController>();
@@ -261,7 +262,8 @@ class HomeController extends GetxController {
     if (!force && _lastTimerNotificationSyncSecond == nowSecond) return;
 
     _lastTimerNotificationSyncSecond = nowSecond;
-    unawaited(_syncRunningTimerNotification());
+    final requestId = ++_timerNotificationSyncRequestId;
+    unawaited(_syncRunningTimerNotification(requestId));
   }
 
   Future<void> pauseAllRunningTimersFromNotification() async {
@@ -290,15 +292,23 @@ class HomeController extends GetxController {
       _pauseTimeCountdown(habit, date);
     }
 
-    await _syncRunningTimerNotification();
+    await _syncRunningTimerNotificationNow();
   }
 
-  Future<void> _syncRunningTimerNotification() async {
+  Future<void> _syncRunningTimerNotificationNow() async {
+    final requestId = ++_timerNotificationSyncRequestId;
+    await _syncRunningTimerNotification(requestId);
+  }
+
+  Future<void> _syncRunningTimerNotification(int requestId) async {
     await LocalNotificationService.handlePendingTimerActions();
+
+    if (requestId != _timerNotificationSyncRequestId) return;
 
     final runningCount = _runningTimerCount();
 
     if (runningCount > 0) {
+      if (requestId != _timerNotificationSyncRequestId) return;
       await LocalNotificationService.showRunningTimerNotification(
         runningCount: runningCount,
         timerText: _runningTimerText(),
@@ -306,6 +316,7 @@ class HomeController extends GetxController {
       return;
     }
 
+    if (requestId != _timerNotificationSyncRequestId) return;
     await LocalNotificationService.cancelRunningTimerNotification();
   }
 
@@ -346,7 +357,7 @@ class HomeController extends GetxController {
       }
 
       await LocalNotificationService.handlePendingTimerActions();
-      await _syncRunningTimerNotification();
+      await _syncRunningTimerNotificationNow();
     } catch (e) {
       print('Error restoring timers: $e');
     }
@@ -672,5 +683,46 @@ class HomeController extends GetxController {
       selectedDate.value,
       categoryId: selectedCategoryId.value,
     );
+  }
+
+  double getOverallProgressForSelectedDate() {
+    final date = selectedDate.value;
+    final habits = getHabitsForSelectedDate();
+    final tasks = getTasksForSelectedDay();
+    final totalItems = habits.length + tasks.length;
+
+    if (totalItems == 0) return 0;
+
+    double progressPoints = 0;
+
+    for (final habit in habits) {
+      progressPoints += _habitProgressRatio(habit, date);
+    }
+
+    for (final task in tasks) {
+      progressPoints += task.progressPercentageForDate(date);
+    }
+
+    return (progressPoints / totalItems).clamp(0.0, 1.0);
+  }
+
+  double _habitProgressRatio(HabitModel habit, DateTime date) {
+    final completion = habitController.getCompletion(habit.id, date);
+
+    switch (habit.questionType) {
+      case HabitQuestionType.numeric:
+        if (habit.targetValue <= 0) return 0;
+        final value = completion?.numericValue ?? 0;
+        return (value / habit.targetValue).clamp(0.0, 1.0);
+      case HabitQuestionType.time:
+        if (habit.timeDurationMinutes <= 0) return 0;
+        final minutes = completion?.timeMinutes ?? 0;
+        return (minutes / habit.timeDurationMinutes).clamp(0.0, 1.0);
+      case HabitQuestionType.text:
+        final answer = completion?.textAnswer?.trim() ?? '';
+        return answer.isNotEmpty ? 1.0 : 0.0;
+      case HabitQuestionType.yesNo:
+        return completion?.isCompleted == true ? 1.0 : 0.0;
+    }
   }
 }

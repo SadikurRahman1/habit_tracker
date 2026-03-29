@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit/core/constants/app_colors.dart';
+import 'package:habit/core/constants/screen_config.dart';
 
 class RepeatDaysSelector extends StatelessWidget {
   final List<bool> repeatDays;
@@ -27,9 +28,46 @@ class RepeatDaysSelector extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        // Wrap(
+        //   spacing: 8,
+        //   runSpacing: 8,
+        //   children: List.generate(7, (index) {
+        //     final isSelected = repeatDays[index];
+        //     return GestureDetector(
+        //       onTap: () {
+        //         final newDays = List<bool>.from(repeatDays);
+        //         newDays[index] = !newDays[index];
+        //         onDaysChanged(newDays);
+        //       },
+        //       child: Container(
+        //         width: 40,
+        //         height: 40,
+        //         decoration: BoxDecoration(
+        //           color: isSelected ? Colors.blue : AppColors.inputFillColor,
+        //           border: Border.all(
+        //             color: isSelected ? Colors.blue : AppColors.borderColor,
+        //             width: 1.5,
+        //           ),
+        //           borderRadius: BorderRadius.circular(8),
+        //         ),
+        //         child: Center(
+        //           child: Text(
+        //             days[index],
+        //             style: TextStyle(
+        //               fontSize: 12,
+        //               fontWeight: FontWeight.w600,
+        //               color: isSelected
+        //                   ? AppColors.white
+        //                   : AppColors.secondaryText,
+        //             ),
+        //           ),
+        //         ),
+        //       ),
+        //     );
+        //   }),
+        // ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(7, (index) {
             final isSelected = repeatDays[index];
             return GestureDetector(
@@ -39,8 +77,8 @@ class RepeatDaysSelector extends StatelessWidget {
                 onDaysChanged(newDays);
               },
               child: Container(
-                width: 40,
-                height: 40,
+                width: 40.w,
+                height: 40.h,
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.blue : AppColors.inputFillColor,
                   border: Border.all(
