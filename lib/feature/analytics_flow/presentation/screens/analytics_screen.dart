@@ -1,14 +1,10 @@
-import 'package:habit/core/wrappers/responsive_card.dart';
 import 'package:habit/feature/home_flow/presentation/controllers/home_controller.dart';
 import 'package:habit/feature/home_flow/presentation/widgets/calendar_bottom_sheet.dart';
 import '../../../../core/exported_files/exported_file.dart';
 import '../controllers/analytics_controller.dart';
 import '../widgets/analytics_completion_section.dart';
-import '../widgets/analytics_export_dialog.dart';
 import '../widgets/analytics_overview_card.dart';
 import '../widgets/analytics_streak_section.dart';
-import '../widgets/date_picker_calendar.dart';
-import '../widgets/weekly_breakdown_card.dart';
 import '../widgets/weekly_trend_chart.dart';
 
 class AnalyticsScreen extends StatelessWidget {

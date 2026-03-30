@@ -26,6 +26,8 @@ class HabitCreationFormController extends GetxController {
     super.onInit();
     if (habitToEdit != null) {
       _loadHabitData(habitToEdit!);
+    } else {
+      selectedQuestionType = HabitQuestionType.yesNo;
     }
   }
 

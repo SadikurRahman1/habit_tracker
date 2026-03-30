@@ -27,7 +27,7 @@ class QuestionTypeSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Question Type *',
+          'Value Type *',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,

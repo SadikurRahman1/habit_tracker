@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:habit/core/services/in_app_update_service.dart';
 import '../../../../../../../core/exported_files/exported_file.dart';
 
 class SplashController extends GetxController {
@@ -24,6 +27,7 @@ class SplashController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    unawaited(InAppUpdateService.checkForUpdate());
     _moveToNext();
   }
 }

@@ -75,25 +75,25 @@ class HabitCreationFormContent extends StatelessWidget {
   }
 }
 
-class _RequiredFieldsBanner extends StatelessWidget {
-  const _RequiredFieldsBanner();
+// class _RequiredFieldsBanner extends StatelessWidget {
+//   const _RequiredFieldsBanner();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        border: Border.all(color: Colors.blue, width: 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
-        'Fields marked with * are required',
-        style: TextStyle(fontSize: 12, color: AppColors.primary),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(12),
+//       decoration: BoxDecoration(
+//         color: Colors.blue.withOpacity(0.1),
+//         border: Border.all(color: Colors.blue, width: 1),
+//         borderRadius: BorderRadius.circular(8),
+//       ),
+//       child: const Text(
+//         'Fields marked with * are required',
+//         style: TextStyle(fontSize: 12, color: AppColors.primary),
+//       ),
+//     );
+//   }
+// }
 
 class _QuestionTypeSection extends StatelessWidget {
   const _QuestionTypeSection({required this.formController});

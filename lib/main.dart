@@ -14,4 +14,6 @@ Future<void> main() async {
   Future<void>.delayed(const Duration(milliseconds: 500), () {
     LocalNotificationService.handlePendingNotificationNavigation();
   });
+
+  
 }
