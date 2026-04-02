@@ -150,7 +150,7 @@ class HabitCreationFormController extends GetxController {
 
     // Schedule notification if enabled
     if (reminderEnabled && notificationTimes.isNotEmpty) {
-      _scheduleNotifications(habit);
+      await _scheduleNotifications(habit);
     } else {
       // Cancel notifications if reminder is disabled
       LocalNotificationService.cancelHabitNotifications(habit.id);

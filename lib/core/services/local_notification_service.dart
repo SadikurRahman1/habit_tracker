@@ -31,6 +31,36 @@ class LocalNotificationService {
   static const String _pendingPauseActionValue = 'pause_habit_timers';
   static Future<void> Function()? _onPauseRunningTimersRequested;
 
+  static Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin
+    >();
+
+    if (androidPlugin == null) {
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
+
+    try {
+      final canScheduleExact =
+          await androidPlugin.canScheduleExactNotifications() ?? false;
+
+      if (canScheduleExact) {
+        return AndroidScheduleMode.exactAllowWhileIdle;
+      }
+
+      await androidPlugin.requestExactAlarmsPermission();
+
+      final canScheduleAfterRequest =
+          await androidPlugin.canScheduleExactNotifications() ?? false;
+
+      return canScheduleAfterRequest
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle;
+    } catch (_) {
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
+  }
+
   static Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -242,6 +272,7 @@ class LocalNotificationService {
     required String body,
   }) async {
     await initialize();
+    final androidScheduleMode = await _resolveAndroidScheduleMode();
 
     const androidDetails = AndroidNotificationDetails(
       'habit_task_channel',
@@ -264,7 +295,7 @@ class LocalNotificationService {
       body,
       RepeatInterval.daily,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: androidScheduleMode,
     );
   }
 
@@ -277,6 +308,7 @@ class LocalNotificationService {
     required List<int> selectedDays,
   }) async {
     await initialize();
+    final androidScheduleMode = await _resolveAndroidScheduleMode();
 
     await cancelTaskNotifications(taskId);
 
@@ -324,7 +356,7 @@ class LocalNotificationService {
           taskName,
           scheduledDate,
           details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          androidScheduleMode: androidScheduleMode,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
@@ -342,6 +374,7 @@ class LocalNotificationService {
     required List<bool> repeatDays, // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
   }) async {
     await initialize();
+    final androidScheduleMode = await _resolveAndroidScheduleMode();
 
     // Cancel existing notifications for this habit first
     await cancelHabitNotifications(habitId);
@@ -393,7 +426,7 @@ class LocalNotificationService {
           'Don\'t forget to complete your habit!',
           scheduledDate,
           details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          androidScheduleMode: androidScheduleMode,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
