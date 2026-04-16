@@ -10,21 +10,14 @@ class HabitCreationScreen extends StatelessWidget {
 
   const HabitCreationScreen({Key? key, this.habitToEdit}) : super(key: key);
 
-  void _handleSubmit(
-    BuildContext context,
-    HabitCreationFormController formController,
-  ) {
+  Future<void> _handleSubmit(HabitCreationFormController formController) async {
     final isEditMode = formController.isEditMode;
     final habitName = formController.habitNameController.text.trim();
-    final success = formController.submit();
+    final success = await formController.submit();
 
     if (!success) return;
 
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    } else {
-      Get.back();
-    }
+    Get.back();
 
     Future.delayed(const Duration(milliseconds: 120), () {
       Get.snackbar(
@@ -65,7 +58,7 @@ class HabitCreationScreen extends StatelessWidget {
           ),
           body: HabitCreationFormContent(
             formController: formController,
-            onSubmit: () => _handleSubmit(context, formController),
+            onSubmit: () => _handleSubmit(formController),
           ),
         );
       },

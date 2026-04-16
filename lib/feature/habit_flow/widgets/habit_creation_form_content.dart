@@ -29,17 +29,17 @@ class HabitCreationFormContent extends StatelessWidget {
           children: [
             // const _RequiredFieldsBanner(),
             // const SizedBox(height: 24),
-            _QuestionTypeSection(formController: formController),
-            const SizedBox(height: 24),
             _HabitNameSection(formController: formController),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            _QuestionTypeSection(formController: formController),
+            const SizedBox(height: 12),
             if (formController.selectedQuestionType ==
                 HabitQuestionType.numeric) ...[
               NumericValueInput(
                 targetValue: formController.targetValue,
                 onValueChanged: formController.setTargetValue,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
             ],
             if (formController.selectedQuestionType ==
                 HabitQuestionType.time) ...[
@@ -47,7 +47,7 @@ class HabitCreationFormContent extends StatelessWidget {
                 timeDurationMinutes: formController.timeDurationMinutes,
                 onDurationChanged: formController.setTimeDurationMinutes,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
             ],
             CategorySelector(
               selectedCategoryId: formController.selectedCategoryId.isEmpty
@@ -55,12 +55,12 @@ class HabitCreationFormContent extends StatelessWidget {
                   : formController.selectedCategoryId,
               onCategorySelected: formController.setCategoryId,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             RepeatDaysSelector(
               repeatDays: formController.repeatDays,
               onDaysChanged: formController.setRepeatDays,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
             _ReminderTimeSection(formController: formController),
             const SizedBox(height: 32),
             _FormActionButtons(

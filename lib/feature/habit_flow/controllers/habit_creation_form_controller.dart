@@ -93,7 +93,7 @@ class HabitCreationFormController extends GetxController {
     update();
   }
 
-  bool submit() {
+  Future<bool> submit() async {
     if (selectedQuestionType == null) {
       Get.snackbar(
         'Error',
@@ -153,7 +153,7 @@ class HabitCreationFormController extends GetxController {
       await _scheduleNotifications(habit);
     } else {
       // Cancel notifications if reminder is disabled
-      LocalNotificationService.cancelHabitNotifications(habit.id);
+      await LocalNotificationService.cancelHabitNotifications(habit.id);
     }
 
     return true;

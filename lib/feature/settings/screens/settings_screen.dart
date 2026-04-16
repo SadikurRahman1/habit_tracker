@@ -59,7 +59,8 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                if (GetPlatform.isAndroid) ...[
+                if (GetPlatform.isAndroid &&
+                    !controller.hasSubmittedPlayStoreReview.value) ...[
                   SettingsPlayStoreReviewTile(
                     isLoading: controller.isLaunchingReviewFlow.value,
                     onTap: controller.isLaunchingReviewFlow.value

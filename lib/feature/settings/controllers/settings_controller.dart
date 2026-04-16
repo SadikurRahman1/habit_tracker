@@ -12,12 +12,15 @@ class SettingsController extends GetxController {
   final _storage = GetStorage();
   final InAppReview _inAppReview = InAppReview.instance;
   static const String _themeKey = 'theme_mode';
+  static const String _playStoreReviewSubmittedKey =
+      'play_store_review_submitted';
   final MonthlyReportPdfService _monthlyReportPdfService =
       MonthlyReportPdfService();
 
   final isDarkMode = true.obs;
   final isGeneratingMonthlyReport = false.obs;
   final isLaunchingReviewFlow = false.obs;
+  final hasSubmittedPlayStoreReview = false.obs;
   final selectedReportMonth = DateTime(
     DateTime.now().year,
     DateTime.now().month,
@@ -35,6 +38,9 @@ class SettingsController extends GetxController {
     if (savedTheme != null) {
       isDarkMode.value = savedTheme == 'dark';
     }
+
+    hasSubmittedPlayStoreReview.value =
+        _storage.read(_playStoreReviewSubmittedKey) == true;
 
     _applyTheme();
   }
@@ -140,6 +146,8 @@ class SettingsController extends GetxController {
       }
 
       await _inAppReview.requestReview();
+      hasSubmittedPlayStoreReview.value = true;
+      await _storage.write(_playStoreReviewSubmittedKey, true);
     } catch (_) {
       Get.snackbar(
         'Unavailable',

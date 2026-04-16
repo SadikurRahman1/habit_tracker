@@ -87,49 +87,49 @@ class SettingsAboutSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Version',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: textSecondary,
-                ),
-              ),
-              Text(
-                '1.0.0',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Built with',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: textSecondary,
-                ),
-              ),
-              Text(
-                'Flutter',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: textPrimary,
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text(
+          //       'Version',
+          //       style: TextStyle(
+          //         fontSize: 12,
+          //         fontWeight: FontWeight.w600,
+          //         color: textSecondary,
+          //       ),
+          //     ),
+          //     Text(
+          //       '1.0.0',
+          //       style: TextStyle(
+          //         fontSize: 12,
+          //         fontWeight: FontWeight.w700,
+          //         color: textPrimary,
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 4),
+        //   Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: [
+        //       Text(
+        //         'Built with',
+        //         style: TextStyle(
+        //           fontSize: 12,
+        //           fontWeight: FontWeight.w600,
+        //           color: textSecondary,
+        //         ),
+        //       ),
+        //       Text(
+        //         'Flutter',
+        //         style: TextStyle(
+        //           fontSize: 12,
+        //           fontWeight: FontWeight.w700,
+        //           color: textPrimary,
+        //         ),
+        //       ),
+        //     ],
+        //   ),
         ],
       ),
     );
