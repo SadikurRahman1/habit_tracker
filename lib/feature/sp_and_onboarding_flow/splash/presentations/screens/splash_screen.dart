@@ -11,13 +11,13 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.mainColor,
 
-      body: CommonBody(
-        widget: Column(
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
           children: [
             const Spacer(),
-            ResponsiveImage(path: ImagePath.profile, fit: BoxFit.fill, size: 200, ),
+            Center(child: Image.asset(ImagePath.logo, fit: BoxFit.fill, width: 200, height: 200)),
             const Spacer(),
-            const CircleLoader(),
           ],
         ),
       ),

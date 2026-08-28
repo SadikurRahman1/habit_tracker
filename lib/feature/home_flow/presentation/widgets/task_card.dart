@@ -22,20 +22,22 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timerController = Get.find<TimerController>();
-    
+
     // Auto-start timer if needed
-    if (task.taskType == TaskType.timer && 
-        task.timerRemainingSeconds == 0 && 
+    if (task.taskType == TaskType.timer &&
+        task.timerRemainingSeconds == 0 &&
         task.timerDurationInSeconds > 0 &&
         !task.isCompleted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final updatedTask = task.copyWith(timerRemainingSeconds: task.timerDurationInSeconds);
+        final updatedTask = task.copyWith(
+          timerRemainingSeconds: task.timerDurationInSeconds,
+        );
         onTaskUpdate(updatedTask);
         timerController.autoStartTimerIfNeeded(updatedTask);
       });
-    } else if (task.taskType == TaskType.timer && 
-               task.isTimerActive && 
-               !timerController.isTimerActive(task.id)) {
+    } else if (task.taskType == TaskType.timer &&
+        task.isTimerActive &&
+        !timerController.isTimerActive(task.id)) {
       // Resume timer if it was active
       WidgetsBinding.instance.addPostFrameCallback((_) {
         timerController.startTimer(task);
@@ -144,8 +146,6 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-
-
   Widget _buildCheckbox(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -158,23 +158,19 @@ class TaskCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: task.isCompleted ? Colors.blue : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: Colors.blue,
-            width: 2,
-          ),
+          border: Border.all(color: Colors.blue, width: 2),
         ),
         child: task.isCompleted
-            ? const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 16,
-              )
+            ? const Icon(Icons.check, color: Colors.white, size: 16)
             : null,
       ),
     );
   }
 
-  Widget _buildTaskTypeContent(BuildContext context, TimerController timerController) {
+  Widget _buildTaskTypeContent(
+    BuildContext context,
+    TimerController timerController,
+  ) {
     switch (task.taskType) {
       case TaskType.descriptionOnly:
         return const SizedBox.shrink();
@@ -195,9 +191,7 @@ class TaskCard extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  task.isCompleted
-                      ? Icons.check_circle
-                      : Icons.help_outline,
+                  task.isCompleted ? Icons.check_circle : Icons.help_outline,
                   color: task.isCompleted ? Colors.green : Colors.white70,
                   size: 20,
                 ),
@@ -207,8 +201,7 @@ class TaskCard extends StatelessWidget {
                     task.isCompleted ? 'Completed' : 'Tap to complete',
                     style: TextStyle(
                       fontSize: 13,
-                      color:
-                          task.isCompleted ? Colors.white70 : Colors.white,
+                      color: task.isCompleted ? Colors.white70 : Colors.white,
                     ),
                   ),
                 ),
@@ -229,8 +222,7 @@ class TaskCard extends StatelessWidget {
             children: [
               Icon(
                 task.answerText != null ? Icons.check_circle : Icons.edit,
-                color:
-                    task.answerText != null ? Colors.green : Colors.white70,
+                color: task.answerText != null ? Colors.green : Colors.white70,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -406,9 +398,7 @@ class TaskCard extends StatelessWidget {
 
   Future<void> _toggleLocalNotification() async {
     final shouldEnable = !task.notificationEnabled;
-    final updatedTask = task.copyWith(
-      notificationEnabled: shouldEnable,
-    );
+    final updatedTask = task.copyWith(notificationEnabled: shouldEnable);
 
     onTaskUpdate(updatedTask);
 
@@ -541,12 +531,11 @@ class TaskCard extends StatelessWidget {
   }
 
   void _showEditTaskDialog(BuildContext context) {
-    final descriptionController =
-        TextEditingController(text: task.description);
-    final questionController =
-        TextEditingController(text: task.question ?? '');
-    final targetController =
-        TextEditingController(text: task.targetValue.toString());
+    final descriptionController = TextEditingController(text: task.description);
+    final questionController = TextEditingController(text: task.question ?? '');
+    final targetController = TextEditingController(
+      text: task.targetValue.toString(),
+    );
 
     TaskPriority selectedPriority = task.priority;
     final selectedDays = task.selectedDays.toSet();
@@ -603,7 +592,10 @@ class TaskCard extends StatelessWidget {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -684,7 +676,10 @@ class TaskCard extends StatelessWidget {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(
+                            color: Colors.blue,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -719,7 +714,10 @@ class TaskCard extends StatelessWidget {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(
+                            color: Colors.blue,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -799,7 +797,9 @@ class TaskCard extends StatelessWidget {
 
                             int targetValue = task.targetValue;
                             if (task.taskType == TaskType.integerTarget) {
-                              targetValue = int.tryParse(targetController.text.trim()) ?? 1;
+                              targetValue =
+                                  int.tryParse(targetController.text.trim()) ??
+                                  1;
                               if (targetValue < 1) {
                                 targetValue = 1;
                               }
@@ -808,11 +808,12 @@ class TaskCard extends StatelessWidget {
                             final updatedTask = task.copyWith(
                               description: title,
                               priority: selectedPriority,
-                              question: task.taskType == TaskType.descriptionOnly
+                              question:
+                                  task.taskType == TaskType.descriptionOnly
                                   ? null
                                   : (questionController.text.trim().isEmpty
-                                      ? null
-                                      : questionController.text.trim()),
+                                        ? null
+                                        : questionController.text.trim()),
                               targetValue: targetValue,
                               selectedDays: selectedDays.toList()..sort(),
                             );
@@ -930,9 +931,12 @@ class TaskCard extends StatelessWidget {
                         final updatedTask = task.copyWith(isCompleted: true);
                         onTaskUpdate(updatedTask);
                         Navigator.pop(context);
-                        Get.snackbar('Done', 'Task marked as completed',
-                            backgroundColor: Colors.green,
-                            colorText: Colors.white);
+                        Get.snackbar(
+                          'Done',
+                          'Task marked as completed',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -988,8 +992,9 @@ class TaskCard extends StatelessWidget {
   }
 
   void showWriteAnswerDialog(BuildContext context) {
-    final TextEditingController answerController =
-        TextEditingController(text: task.answerText ?? '');
+    final TextEditingController answerController = TextEditingController(
+      text: task.answerText ?? '',
+    );
 
     showDialog(
       context: context,
@@ -1067,17 +1072,25 @@ class TaskCard extends StatelessWidget {
                     child: GestureDetector(
                       onTap: () {
                         if (answerController.text.isEmpty) {
-                          Get.snackbar('Error', 'Please enter an answer',
-                              backgroundColor: Colors.red,
-                              colorText: Colors.white);
+                          Get.snackbar(
+                            'Error',
+                            'Please enter an answer',
+                            backgroundColor: Colors.red,
+                            colorText: Colors.white,
+                          );
                           return;
                         }
-                        final updatedTask = task.copyWith(answerText: answerController.text);
+                        final updatedTask = task.copyWith(
+                          answerText: answerController.text,
+                        );
                         onTaskUpdate(updatedTask);
                         Navigator.pop(context);
-                        Get.snackbar('Done', 'Answer saved',
-                            backgroundColor: Colors.green,
-                            colorText: Colors.white);
+                        Get.snackbar(
+                          'Done',
+                          'Answer saved',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1136,10 +1149,7 @@ class TaskCard extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(
                   'Select value (1 to ${task.targetValue}):',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white70,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -1148,42 +1158,39 @@ class TaskCard extends StatelessWidget {
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: List.generate(
-                        task.targetValue,
-                        (index) {
-                          final value = index + 1;
-                          return GestureDetector(
-                            onTap: () {
-                              setDialogState(() => selectedProgress = value);
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
+                      children: List.generate(task.targetValue, (index) {
+                        final value = index + 1;
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() => selectedProgress = value);
+                          },
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: selectedProgress == value
+                                  ? Colors.blue
+                                  : Colors.white10,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
                                 color: selectedProgress == value
                                     ? Colors.blue
-                                    : Colors.white10,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: selectedProgress == value
-                                      ? Colors.blue
-                                      : AppColors.borderColor,
-                                ),
+                                    : AppColors.borderColor,
                               ),
-                              child: Center(
-                                child: Text(
-                                  value.toString(),
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                value.toString(),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      }),
                     ),
                   ),
                 ),
@@ -1216,7 +1223,9 @@ class TaskCard extends StatelessWidget {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          final updatedTask = task.copyWith(currentProgress: selectedProgress);
+                          final updatedTask = task.copyWith(
+                            currentProgress: selectedProgress,
+                          );
                           onTaskUpdate(updatedTask);
                           Navigator.pop(context);
                           Get.snackbar(

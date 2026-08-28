@@ -1,6 +1,6 @@
 class AnalyticsService {
   // Service for fetching analytics data from API or database
-  
+
   Future<Map<String, dynamic>> getAnalyticsData() async {
     try {
       // TODO: Implement API call or database query

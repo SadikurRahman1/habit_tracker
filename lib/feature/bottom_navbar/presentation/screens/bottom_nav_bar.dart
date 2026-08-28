@@ -16,10 +16,7 @@ class BottomNavItem {
 class BottomNavBar extends StatelessWidget {
   final Function(int) onTabChanged;
 
-  const BottomNavBar({
-    super.key,
-    required this.onTabChanged,
-  });
+  const BottomNavBar({super.key, required this.onTabChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -43,20 +40,28 @@ class BottomNavBar extends StatelessWidget {
       ),
     ];
 
-    return Obx(
-      () => Container(
+    return Obx(() {
+      final isDarkMode = AppColors.isDarkMode;
+      final navBackgroundColor = isDarkMode
+          ? AppColors.darkMainColor
+          : AppColors.lightMainColor;
+      final navShadowColor = isDarkMode
+          ? AppColors.black.withValues(alpha: 0.35)
+          : AppColors.black.withValues(alpha: 0.08);
+
+      return Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: navBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: navShadowColor,
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
           ],
         ),
         child: BottomNavigationBar(
-          backgroundColor: AppColors.mainColor,
+          backgroundColor: navBackgroundColor,
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.inActiveColor,
           currentIndex: controller.selectedIndex.value,
@@ -69,13 +74,13 @@ class BottomNavBar extends StatelessWidget {
           items: List.generate(
             items.length,
             (index) => BottomNavigationBarItem(
-              icon: ResponsiveIcon(
-                icon: items[index].inactiveIcon,
-                size: 24,
+              icon: Icon(
+                items[index].inactiveIcon,
+                size: 30,
                 color: AppColors.inActiveColor,
               ),
-              activeIcon: ResponsiveIcon(
-                icon: items[index].activeIcon,
+              activeIcon: Icon(
+                items[index].activeIcon,
                 size: 24,
                 color: AppColors.primary,
               ),
@@ -83,8 +88,7 @@ class BottomNavBar extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
-

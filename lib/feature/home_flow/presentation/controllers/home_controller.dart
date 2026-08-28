@@ -1,65 +1,527 @@
+import 'dart:async';
+
+import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../core/exported_files/exported_file.dart';
+import 'package:habit/core/services/local_notification_service.dart';
+import '../../../../core/models/category_model.dart';
+import '../../../habit_flow/controllers/habit_controller.dart';
+import '../../../habit_flow/model/habit_model.dart';
+import '../../../settings/category_flow/controllers/category_controller.dart';
 import '../../model/task.dart';
 import '../../service/home_service.dart';
+import '../../service/timer_state_service.dart';
 
 class HomeController extends GetxController {
   final tasks = <Task>[].obs;
-  final selectedDate = DateTime.now().obs;
-  final selectedCategory = Rx<String?>(null); // null = all categories
+  late final selectedDate = Rx<DateTime>(
+    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+  );
+  final selectedCategoryId = Rx<String?>(null); // null = all categories
   final homeService = HomeService();
+  final timerStateService = TimerStateService();
+  final _timeRemainingSecondsByHabitDate = <String, int>{}.obs;
+  final _timeRunningByHabitDate = <String, bool>{}.obs;
+  final Map<String, Timer> _timeTickers = {};
+  int _lastTimerNotificationSyncSecond = -1;
+  int _timerNotificationSyncRequestId = 0;
+
+  HabitController get habitController => Get.find<HabitController>();
+  CategoryController get categoryController => Get.find<CategoryController>();
 
   @override
   void onInit() {
     super.onInit();
     loadInitialTasks();
+    LocalNotificationService.registerPauseRunningTimersHandler(
+      pauseAllRunningTimersFromNotification,
+    );
+    _restoreActiveTimers();
+  }
+
+  @override
+  void onClose() {
+    LocalNotificationService.unregisterPauseRunningTimersHandler();
+    _saveAllTimerStates();
+    for (final ticker in _timeTickers.values) {
+      ticker.cancel();
+    }
+    _timeTickers.clear();
+    _requestRunningTimerNotificationSync(force: true);
+    super.onClose();
   }
 
   Future<void> loadInitialTasks() async {
     try {
       final loadedTasks = await homeService.loadTasks();
       tasks.assignAll(loadedTasks);
+      _syncSelectedCategoryWithAvailableCategories();
     } catch (e) {
       print('Error loading tasks: $e');
     }
   }
 
   void updateSelectedDate(DateTime date) {
-    selectedDate.value = date;
+    selectedDate.value = DateTime(date.year, date.month, date.day);
+    _syncSelectedCategoryWithAvailableCategories();
+  }
+
+  void selectCategory(String? categoryId) {
+    if (categoryId == null) {
+      selectedCategoryId.value = null;
+      return;
+    }
+
+    final availableIds = getAvailableCategoriesForSelectedDate()
+        .map((cat) => cat.id)
+        .toSet();
+
+    selectedCategoryId.value = availableIds.contains(categoryId)
+        ? categoryId
+        : null;
+  }
+
+  bool get isFutureDate {
+    final now = DateTime.now();
+    final selected = selectedDate.value;
+    return selected.isAfter(DateTime(now.year, now.month, now.day));
+  }
+
+  String _timerKey(String habitId, DateTime date) {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    return '${habitId}_${normalizedDate.toIso8601String()}';
+  }
+
+  int getTimeRemainingSeconds(HabitModel habit, DateTime date) {
+    final key = _timerKey(habit.id, date);
+    final cached = _timeRemainingSecondsByHabitDate[key];
+    if (cached != null) return cached;
+
+    final completion = habitController.getCompletion(habit.id, date);
+    final elapsedMinutes = completion?.timeMinutes ?? 0;
+    final targetSeconds = habit.timeDurationMinutes * 60;
+    final elapsedSeconds = (elapsedMinutes * 60)
+        .clamp(0, targetSeconds)
+        .toInt();
+    return targetSeconds - elapsedSeconds;
+  }
+
+  bool isTimeCountdownRunning(String habitId, DateTime date) {
+    final key = _timerKey(habitId, date);
+    return _timeRunningByHabitDate[key] ?? false;
+  }
+
+  void toggleTimeCountdown(HabitModel habit, DateTime date) {
+    final key = _timerKey(habit.id, date);
+
+    if (_timeRunningByHabitDate[key] == true) {
+      _pauseTimeCountdown(habit, date);
+      return;
+    }
+
+    final initialRemaining = getTimeRemainingSeconds(habit, date);
+    if (initialRemaining <= 0) {
+      habitController.updateTimeCompletion(
+        habit.id,
+        date,
+        habit.timeDurationMinutes,
+      );
+      _timeRemainingSecondsByHabitDate[key] = 0;
+      _timeRunningByHabitDate[key] = false;
+      _requestRunningTimerNotificationSync(force: true);
+      return;
+    }
+
+    _timeRemainingSecondsByHabitDate[key] = initialRemaining;
+    _timeRunningByHabitDate[key] = true;
+
+    // Save timer state
+    _saveTimerState(habit, date, isPaused: false);
+    _requestRunningTimerNotificationSync(force: true);
+
+    _timeTickers[key]?.cancel();
+    _timeTickers[key] = Timer.periodic(const Duration(seconds: 1), (ticker) {
+      if (!(_timeRunningByHabitDate[key] ?? false)) {
+        ticker.cancel();
+        _timeTickers.remove(key);
+        return;
+      }
+
+      final currentRemaining =
+          _timeRemainingSecondsByHabitDate[key] ?? initialRemaining;
+      final nextRemaining = currentRemaining - 1;
+
+      if (nextRemaining <= 0) {
+        _timeRemainingSecondsByHabitDate[key] = 0;
+        _timeRunningByHabitDate[key] = false;
+        ticker.cancel();
+        _timeTickers.remove(key);
+
+        habitController.updateTimeCompletion(
+          habit.id,
+          date,
+          habit.timeDurationMinutes,
+        );
+        timerStateService.removeTimerState(habit.id, date);
+        _requestRunningTimerNotificationSync(force: true);
+        return;
+      }
+
+      _timeRemainingSecondsByHabitDate[key] = nextRemaining;
+      _requestRunningTimerNotificationSync();
+
+      final elapsedSeconds = habit.timeDurationMinutes * 60 - nextRemaining;
+      final elapsedMinutes = elapsedSeconds ~/ 60;
+      final savedMinutes =
+          habitController.getCompletion(habit.id, date)?.timeMinutes ?? 0;
+
+      if (elapsedMinutes > savedMinutes) {
+        habitController.updateTimeCompletion(habit.id, date, elapsedMinutes);
+      }
+
+      // Periodically save timer state (every 5 seconds)
+      if (elapsedSeconds % 5 == 0) {
+        _saveTimerState(habit, date, isPaused: false);
+      }
+    });
+  }
+
+  void stopTimeCountdown(String habitId, DateTime date) {
+    final key = _timerKey(habitId, date);
+    _timeRunningByHabitDate[key] = false;
+    _timeTickers[key]?.cancel();
+
+    timerStateService.removeTimerState(habitId, date);
+    _timeTickers.remove(key);
+    _requestRunningTimerNotificationSync(force: true);
+  }
+
+  void _pauseTimeCountdown(HabitModel habit, DateTime date) {
+    final key = _timerKey(habit.id, date);
+    _timeRunningByHabitDate[key] = false;
+    _timeTickers[key]?.cancel();
+    _timeTickers.remove(key);
+
+    final remaining =
+        _timeRemainingSecondsByHabitDate[key] ??
+        getTimeRemainingSeconds(habit, date);
+    final elapsedSeconds = habit.timeDurationMinutes * 60 - remaining;
+    final elapsedMinutes = (elapsedSeconds / 60).floor();
+    habitController.updateTimeCompletion(habit.id, date, elapsedMinutes);
+
+    // Save paused state
+    _saveTimerState(habit, date, isPaused: true);
+    _requestRunningTimerNotificationSync(force: true);
+  }
+
+  int _runningTimerCount() {
+    return _timeRunningByHabitDate.values
+        .where((isRunning) => isRunning)
+        .length;
+  }
+
+  String _formatTimerValue(int totalSeconds) {
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String _runningTimerText() {
+    final runningKeys = _timeRunningByHabitDate.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    if (runningKeys.isEmpty) {
+      return 'Timer running';
+    }
+
+    final runningSeconds = runningKeys
+        .map((key) => _timeRemainingSecondsByHabitDate[key] ?? 0)
+        .where((seconds) => seconds > 0)
+        .toList();
+
+    if (runningSeconds.isEmpty) {
+      return 'Timer running';
+    }
+
+    final nearestRemaining = runningSeconds.reduce(
+      (current, next) => current < next ? current : next,
+    );
+
+    return 'Remaining ${_formatTimerValue(nearestRemaining)}';
+  }
+
+  void _requestRunningTimerNotificationSync({bool force = false}) {
+    final nowSecond = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (!force && _lastTimerNotificationSyncSecond == nowSecond) return;
+
+    _lastTimerNotificationSyncSecond = nowSecond;
+    final requestId = ++_timerNotificationSyncRequestId;
+    unawaited(_syncRunningTimerNotification(requestId));
+  }
+
+  Future<void> pauseAllRunningTimersFromNotification() async {
+    final runningKeys = _timeRunningByHabitDate.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    for (final key in runningKeys) {
+      final separatorIndex = key.indexOf('_');
+      if (separatorIndex <= 0) continue;
+
+      final habitId = key.substring(0, separatorIndex);
+      final dateRaw = key.substring(separatorIndex + 1);
+      final date = DateTime.tryParse(dateRaw);
+      if (date == null) continue;
+
+      final habit = habitController.getHabitById(habitId);
+      if (habit == null) {
+        _timeRunningByHabitDate[key] = false;
+        _timeTickers[key]?.cancel();
+        _timeTickers.remove(key);
+        continue;
+      }
+
+      _pauseTimeCountdown(habit, date);
+    }
+
+    await _syncRunningTimerNotificationNow();
+  }
+
+  Future<void> _syncRunningTimerNotificationNow() async {
+    final requestId = ++_timerNotificationSyncRequestId;
+    await _syncRunningTimerNotification(requestId);
+  }
+
+  Future<void> _syncRunningTimerNotification(int requestId) async {
+    await LocalNotificationService.handlePendingTimerActions();
+
+    if (requestId != _timerNotificationSyncRequestId) return;
+
+    final runningCount = _runningTimerCount();
+
+    if (runningCount > 0) {
+      if (requestId != _timerNotificationSyncRequestId) return;
+      await LocalNotificationService.showRunningTimerNotification(
+        runningCount: runningCount,
+        timerText: _runningTimerText(),
+      );
+      return;
+    }
+
+    if (requestId != _timerNotificationSyncRequestId) return;
+    await LocalNotificationService.cancelRunningTimerNotification();
+  }
+
+  /// Restore active timers from storage on app startup
+  Future<void> _restoreActiveTimers() async {
+    try {
+      final savedStates = timerStateService.getAllTimerStates();
+
+      for (final state in savedStates) {
+        final habit = habitController.getHabitById(state.habitId);
+        if (habit == null) continue;
+
+        // Calculate current remaining time
+        final currentRemaining = state.remainingSeconds;
+        if (currentRemaining <= 0) {
+          // Timer has already completed
+          await timerStateService.removeTimerState(habit.id, state.date);
+          continue;
+        }
+
+        final key = _timerKey(habit.id, state.date);
+
+        if (state.isRunning) {
+          // Resume running timer
+          _timeRemainingSecondsByHabitDate[key] = currentRemaining;
+          _timeRunningByHabitDate[key] = true;
+
+          _timeTickers[key]?.cancel();
+          _timeTickers[key] = Timer.periodic(
+            const Duration(seconds: 1),
+            (ticker) => _handleRestoredTimerTick(ticker, habit, state.date),
+          );
+        } else {
+          // Timer was paused, restore paused state
+          _timeRemainingSecondsByHabitDate[key] = currentRemaining;
+          _timeRunningByHabitDate[key] = false;
+        }
+      }
+
+      await LocalNotificationService.handlePendingTimerActions();
+      await _syncRunningTimerNotificationNow();
+    } catch (e) {
+      print('Error restoring timers: $e');
+    }
+  }
+
+  /// Handle tick for restored timer
+  void _handleRestoredTimerTick(Timer ticker, HabitModel habit, DateTime date) {
+    final key = _timerKey(habit.id, date);
+
+    if (!(_timeRunningByHabitDate[key] ?? false)) {
+      ticker.cancel();
+      _timeTickers.remove(key);
+      return;
+    }
+
+    final currentRemaining =
+        _timeRemainingSecondsByHabitDate[key] ??
+        getTimeRemainingSeconds(habit, date);
+    final nextRemaining = currentRemaining - 1;
+
+    if (nextRemaining <= 0) {
+      _timeRemainingSecondsByHabitDate[key] = 0;
+      _timeRunningByHabitDate[key] = false;
+      ticker.cancel();
+      _timeTickers.remove(key);
+
+      habitController.updateTimeCompletion(
+        habit.id,
+        date,
+        habit.timeDurationMinutes,
+      );
+      timerStateService.removeTimerState(habit.id, date);
+      _requestRunningTimerNotificationSync(force: true);
+      return;
+    }
+
+    _timeRemainingSecondsByHabitDate[key] = nextRemaining;
+    _requestRunningTimerNotificationSync();
+
+    final elapsedSeconds = habit.timeDurationMinutes * 60 - nextRemaining;
+    final elapsedMinutes = elapsedSeconds ~/ 60;
+    final savedMinutes =
+        habitController.getCompletion(habit.id, date)?.timeMinutes ?? 0;
+
+    if (elapsedMinutes > savedMinutes) {
+      habitController.updateTimeCompletion(habit.id, date, elapsedMinutes);
+    }
+
+    _saveTimerState(habit, date, isPaused: false);
+  }
+
+  /// Save timer state to storage
+  Future<void> _saveTimerState(
+    HabitModel habit,
+    DateTime date, {
+    required bool isPaused,
+  }) async {
+    try {
+      final key = _timerKey(habit.id, date);
+      final remaining =
+          _timeRemainingSecondsByHabitDate[key] ??
+          getTimeRemainingSeconds(habit, date);
+
+      // Initialize startedAt based on elapsed time
+      final elapsedSeconds = (habit.timeDurationMinutes * 60) - remaining;
+      final startedAt = DateTime.now().subtract(
+        Duration(seconds: elapsedSeconds),
+      );
+
+      final timerState = TimerStateModel(
+        habitId: habit.id,
+        date: date,
+        startedAt: startedAt,
+        totalSeconds: habit.timeDurationMinutes * 60,
+        pausedAtElapsedSeconds: isPaused ? elapsedSeconds : null,
+      );
+
+      await timerStateService.saveTimerState(timerState);
+    } catch (e) {
+      print('Error saving timer state: $e');
+    }
+  }
+
+  /// Save all current timer states before app closes
+  Future<void> _saveAllTimerStates() async {
+    try {
+      for (final entry in _timeTickers.entries) {
+        final parts = entry.key.split('_');
+        if (parts.length < 2) continue;
+
+        final habitId = parts[0];
+        final habit = habitController.getHabitById(habitId);
+        if (habit == null) continue;
+
+        final dateStr = entry.key.replaceFirst('${habitId}_', '');
+        try {
+          final date = DateTime.parse(dateStr);
+          final isRunning = _timeRunningByHabitDate[entry.key] ?? false;
+          await _saveTimerState(habit, date, isPaused: !isRunning);
+        } catch (e) {
+          continue;
+        }
+      }
+    } catch (e) {
+      print('Error saving all timer states: $e');
+    }
   }
 
   DateTime getMonday(DateTime date) {
     return date.subtract(Duration(days: date.weekday - 1));
   }
 
-  Future<void> addTask({
+  String _taskDateKey(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    final y = normalized.year.toString().padLeft(4, '0');
+    final m = normalized.month.toString().padLeft(2, '0');
+    final d = normalized.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  Future<Task> addTask({
     required String description,
-    required TaskCategory category,
+    required String
+    categoryId, // Changed from TaskCategory to String categoryId
     required TaskPriority priority,
     required TaskType taskType,
     String? question,
     int targetValue = 1,
     int timerDurationInSeconds = 0,
     List<int>? selectedDays,
+    bool notificationEnabled = false,
+    List<String> notificationTimes = const [],
   }) async {
+    final sanitizedTimes = notificationTimes.toSet().toList()..sort();
+
     final task = Task(
       id: const Uuid().v4(),
       description: description,
-      category: category,
+      categoryId: categoryId, // Use categoryId
       priority: priority,
       taskType: taskType,
       question: question,
-      targetValue: taskType == TaskType.integerTarget ? targetValue : 1,
-      timerDurationInSeconds: taskType == TaskType.timer ? timerDurationInSeconds : 0,
+      targetValue: taskType == TaskType.integerTarget
+          ? targetValue.clamp(1, 50)
+          : 1,
+      timerDurationInSeconds: taskType == TaskType.timer
+          ? timerDurationInSeconds
+          : 0,
       selectedDays: selectedDays ?? [1, 2, 3, 4, 5, 6, 7],
+      notificationEnabled: notificationEnabled && sanitizedTimes.isNotEmpty,
+      notificationTimes: notificationEnabled ? sanitizedTimes : const [],
     );
+
     tasks.add(task);
     await homeService.saveTasks(tasks);
+    _syncSelectedCategoryWithAvailableCategories();
+    return task;
   }
 
   Future<void> deleteTask(String taskId) async {
+    await LocalNotificationService.cancelTaskNotifications(taskId);
     tasks.removeWhere((task) => task.id == taskId);
     await homeService.saveTasks(tasks);
+    _syncSelectedCategoryWithAvailableCategories();
   }
 
   Future<void> updateTask(Task updatedTask) async {
@@ -68,6 +530,7 @@ class HomeController extends GetxController {
       tasks[index] = updatedTask;
       tasks.refresh();
       await homeService.saveTasks(tasks);
+      _syncSelectedCategoryWithAvailableCategories();
     }
   }
 
@@ -88,7 +551,10 @@ class HomeController extends GetxController {
   }
 
   int getCompletedTasksForSelectedDay() {
-    return getTasksForSelectedDay().where((task) => task.isFullyCompleted).length;
+    final date = selectedDate.value;
+    return getTasksForSelectedDay()
+        .where((task) => task.isCompletedForDate(date))
+        .length;
   }
 
   double getCompletionPercentage() {
@@ -99,8 +565,49 @@ class HomeController extends GetxController {
   double getCompletionPercentageForSelectedDay() {
     final todayTasks = getTasksForSelectedDay();
     if (todayTasks.isEmpty) return 0;
-    final completed = todayTasks.where((task) => task.isFullyCompleted).length;
+    final date = selectedDate.value;
+    final completed = todayTasks
+        .where((task) => task.isCompletedForDate(date))
+        .length;
     return (completed / todayTasks.length);
+  }
+
+  int getTaskProgressForDate(Task task, DateTime date) {
+    return task.progressForDate(date);
+  }
+
+  Future<void> incrementTaskProgress(Task task, DateTime date) async {
+    if (isFutureDate) return;
+
+    final key = _taskDateKey(date);
+    final current = task.progressByDate[key] ?? 0;
+    final next = (current + 1).clamp(0, task.frequency);
+
+    if (next == current) return;
+
+    final updated = task.copyWith(
+      progressByDate: {...task.progressByDate, key: next},
+      currentProgress: next,
+      isCompleted: next >= task.frequency,
+    );
+    await updateTask(updated);
+  }
+
+  Future<void> decrementTaskProgress(Task task, DateTime date) async {
+    if (isFutureDate) return;
+
+    final key = _taskDateKey(date);
+    final current = task.progressByDate[key] ?? 0;
+    final next = (current - 1).clamp(0, task.frequency);
+
+    if (next == current) return;
+
+    final updated = task.copyWith(
+      progressByDate: {...task.progressByDate, key: next},
+      currentProgress: next,
+      isCompleted: next >= task.frequency,
+    );
+    await updateTask(updated);
   }
 
   String exportTasks() {
@@ -108,20 +615,114 @@ class HomeController extends GetxController {
   }
 
   List<Task> getTasksByDate(DateTime date) {
-    // This is a placeholder - in real scenario you'd store creation date
-    // For now, return all tasks
     return tasks;
   }
 
-  List<Task> getTasksForSelectedDay() {
+  List<Task> getTasksForSelectedDay({bool applyCategoryFilter = true}) {
     final dayOfWeek = selectedDate.value.weekday; // 1=Mon, 7=Sun
-    var filtered = tasks.where((task) => task.selectedDays.contains(dayOfWeek)).toList();
-    
-    // Filter by category if selected
-    if (selectedCategory.value != null) {
-      filtered = filtered.where((task) => task.category.label == selectedCategory.value).toList();
+    var filtered = tasks
+        .where((task) => task.selectedDays.contains(dayOfWeek))
+        .toList();
+
+    if (applyCategoryFilter && selectedCategoryId.value != null) {
+      filtered = filtered
+          .where((task) => task.categoryId == selectedCategoryId.value)
+          .toList();
     }
-    
+
     return filtered;
+  }
+
+  List<HabitModel> getHabitsForSelectedDate() {
+    var habits = habitController.getHabitsForDate(selectedDate.value);
+
+    if (selectedCategoryId.value != null) {
+      habits = habits
+          .where((habit) => habit.categoryId == selectedCategoryId.value)
+          .toList();
+    }
+
+    return habits;
+  }
+
+  List<CategoryModel> getAvailableCategoriesForSelectedDate() {
+    final habitsForDate = habitController.getHabitsForDate(selectedDate.value);
+    final habitCategoryIds = habitsForDate
+        .map((habit) => habit.categoryId)
+        .toSet();
+
+    final taskCategoryIds = getTasksForSelectedDay(
+      applyCategoryFilter: false,
+    ).map((task) => task.categoryId).toSet();
+
+    final availableCategories = categoryController.categories.where((category) {
+      final matchesHabit = habitCategoryIds.contains(category.id);
+      final matchesTask = taskCategoryIds.contains(category.id);
+      return matchesHabit || matchesTask;
+    }).toList();
+
+    final selectedId = selectedCategoryId.value;
+    if (selectedId != null &&
+        !availableCategories.any((category) => category.id == selectedId)) {
+      selectedCategoryId.value = null;
+    }
+
+    return availableCategories;
+  }
+
+  void _syncSelectedCategoryWithAvailableCategories() {
+    getAvailableCategoriesForSelectedDate();
+  }
+
+  int getTotalHabitsForSelectedDate() {
+    return getHabitsForSelectedDate().length;
+  }
+
+  int getCompletedHabitsForSelectedDate() {
+    return habitController.getCompletedCountForDate(
+      selectedDate.value,
+      categoryId: selectedCategoryId.value,
+    );
+  }
+
+  double getOverallProgressForSelectedDate() {
+    final date = selectedDate.value;
+    final habits = getHabitsForSelectedDate();
+    final tasks = getTasksForSelectedDay();
+    final totalItems = habits.length + tasks.length;
+
+    if (totalItems == 0) return 0;
+
+    double progressPoints = 0;
+
+    for (final habit in habits) {
+      progressPoints += _habitProgressRatio(habit, date);
+    }
+
+    for (final task in tasks) {
+      progressPoints += task.progressPercentageForDate(date);
+    }
+
+    return (progressPoints / totalItems).clamp(0.0, 1.0);
+  }
+
+  double _habitProgressRatio(HabitModel habit, DateTime date) {
+    final completion = habitController.getCompletion(habit.id, date);
+
+    switch (habit.questionType) {
+      case HabitQuestionType.numeric:
+        if (habit.targetValue <= 0) return 0;
+        final value = completion?.numericValue ?? 0;
+        return (value / habit.targetValue).clamp(0.0, 1.0);
+      case HabitQuestionType.time:
+        if (habit.timeDurationMinutes <= 0) return 0;
+        final minutes = completion?.timeMinutes ?? 0;
+        return (minutes / habit.timeDurationMinutes).clamp(0.0, 1.0);
+      case HabitQuestionType.text:
+        final answer = completion?.textAnswer?.trim() ?? '';
+        return answer.isNotEmpty ? 1.0 : 0.0;
+      case HabitQuestionType.yesNo:
+        return completion?.isCompleted == true ? 1.0 : 0.0;
+    }
   }
 }

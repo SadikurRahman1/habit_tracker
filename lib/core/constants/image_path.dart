@@ -10,5 +10,4 @@ class ImagePath {
   static const String onboarding3 = '$_basePath/onboarding3.png';
   static const String success = '$_basePath/success.png';
   static const String noData = '$_basePath/no_data.png';
-
 }

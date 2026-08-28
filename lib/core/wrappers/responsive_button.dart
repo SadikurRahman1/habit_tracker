@@ -1,4 +1,3 @@
-
 import '../../../../../../core/exported_files/exported_file.dart';
 
 class ResponsiveButton extends StatelessWidget {
@@ -21,9 +20,9 @@ class ResponsiveButton extends StatelessWidget {
     this.leadingIcon,
     this.iconColor,
   }) : assert(
-  (leadingIcon == null || trailingIcon == null),
-  "You cannot provide both leadingIcon and trailingIcon. Use only one.",
-  );
+         (leadingIcon == null || trailingIcon == null),
+         "You cannot provide both leadingIcon and trailingIcon. Use only one.",
+       );
 
   final String title;
   final VoidCallback onTap;
@@ -54,10 +53,10 @@ class ResponsiveButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius.w),
         gradient: gradientColors != null
             ? LinearGradient(
-          colors: gradientColors!,
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        )
+                colors: gradientColors!,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              )
             : null,
         color: gradientColors == null
             ? (backgroundColor ?? AppColors.mainColor)
@@ -70,45 +69,45 @@ class ResponsiveButton extends StatelessWidget {
       alignment: Alignment.center,
       child: isLoading
           ? SizedBox(
-        height: 22.w,
-        width: 22.w,
-        child: const CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
-      )
+              height: 22.w,
+              width: 22.w,
+              child: const CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
           : Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (leadingIcon != null) ...[
-            Icon(
-              leadingIcon!,
-              size: 20.w, // FIXED
-              color: iconColor,
-            ),
-            SizedBox(width: 8.w),
-          ],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (leadingIcon != null) ...[
+                  Icon(
+                    leadingIcon!,
+                    size: 20.w, // FIXED
+                    color: iconColor,
+                  ),
+                  SizedBox(width: 8.w),
+                ],
 
-          /// FIXED: tablet-safe font scaling
-          ResponsiveText(
-            text: title,
-            fontSize: (fontSize ?? 16) *
-                (isTablet ? 0.85 : 1.0), // tablet text a little smaller
-            fontWeight: fontWeight ?? FontWeight.w500,
-            color: titleColor ?? AppColors.white,
-          ),
+                /// FIXED: tablet-safe font scaling
+                ResponsiveText(
+                  text: title,
+                  fontSize:
+                      (fontSize ?? 16) *
+                      (isTablet ? 0.85 : 1.0), // tablet text a little smaller
+                  fontWeight: fontWeight ?? FontWeight.w500,
+                  color: titleColor ?? AppColors.white,
+                ),
 
-          if (trailingIcon != null) ...[
-            SizedBox(width: 8.w),
-            Icon(
-              trailingIcon!,
-              size: 20.w, // FIXED
-              color: iconColor ?? AppColors.white,
+                if (trailingIcon != null) ...[
+                  SizedBox(width: 8.w),
+                  Icon(
+                    trailingIcon!,
+                    size: 20.w, // FIXED
+                    color: iconColor ?? AppColors.white,
+                  ),
+                ],
+              ],
             ),
-          ],
-        ],
-      ),
     ).onTap(isLoading ? null : onTap);
   }
-
 }

@@ -4,6 +4,8 @@ import '../controllers/settings_controller.dart';
 class SettingsBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put<SettingsController>(SettingsController());
+    if (!Get.isRegistered<SettingsController>()) {
+      Get.put<SettingsController>(SettingsController(), permanent: true);
+    }
   }
 }

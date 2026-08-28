@@ -1,14 +1,31 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:printing/printing.dart';
+
+import '../../habit_flow/controllers/habit_controller.dart';
+import '../../home_flow/presentation/controllers/home_controller.dart';
+import '../services/monthly_report_pdf_service.dart';
 
 class SettingsController extends GetxController {
   final _storage = GetStorage();
+  final InAppReview _inAppReview = InAppReview.instance;
   static const String _themeKey = 'theme_mode';
-  static const String _customCategoriesKey = 'custom_categories';
+  static const String _playStoreReviewSubmittedKey =
+      'play_store_review_submitted';
+  final MonthlyReportPdfService _monthlyReportPdfService =
+      MonthlyReportPdfService();
 
-  final isDarkMode = false.obs;
-  final customCategories = <String>[].obs;
+  final isDarkMode = true.obs;
+  final isGeneratingMonthlyReport = false.obs;
+  final isLaunchingReviewFlow = false.obs;
+  final hasSubmittedPlayStoreReview = false.obs;
+  final selectedReportMonth = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    1,
+  ).obs;
 
   @override
   void onInit() {
@@ -17,47 +34,153 @@ class SettingsController extends GetxController {
   }
 
   void loadSettings() {
-    // Load theme mode
     final savedTheme = _storage.read(_themeKey);
     if (savedTheme != null) {
       isDarkMode.value = savedTheme == 'dark';
     }
 
-    // Load custom categories
-    final saved = _storage.read(_customCategoriesKey);
-    if (saved != null && saved is List) {
-      customCategories.assignAll(List<String>.from(saved));
-    }
+    hasSubmittedPlayStoreReview.value =
+        _storage.read(_playStoreReviewSubmittedKey) == true;
+
+    _applyTheme();
   }
 
-  void toggleTheme() {
-    isDarkMode.value = !isDarkMode.value;
+  void _applyTheme() {
+    Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  void toggleTheme([bool? value]) {
+    isDarkMode.value = value ?? !isDarkMode.value;
     _storage.write(_themeKey, isDarkMode.value ? 'dark' : 'light');
+    _applyTheme();
+    // Force immediate app rebuild to reflect color changes
+    Future.delayed(Duration.zero, () {
+      Get.forceAppUpdate();
+    });
   }
 
-  void addCustomCategory(String categoryName) {
-    if (categoryName.isNotEmpty && !customCategories.contains(categoryName)) {
-      customCategories.add(categoryName);
-      _storage.write(_customCategoriesKey, customCategories.toList());
+  Future<void> downloadMonthlyReport(DateTime month) async {
+    if (isGeneratingMonthlyReport.value) return;
+
+    if (!Get.isRegistered<HabitController>()) {
+      Get.snackbar(
+        'Unavailable',
+        'Habit data is not ready yet. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    isGeneratingMonthlyReport.value = true;
+
+    try {
+      final selectedMonth = DateTime(month.year, month.month, 1);
+      selectedReportMonth.value = selectedMonth;
+
+      final habitController = Get.find<HabitController>();
+      final homeController = Get.isRegistered<HomeController>()
+          ? Get.find<HomeController>()
+          : null;
+
+      final result = await _monthlyReportPdfService.generateMonthlyReport(
+        month: selectedMonth,
+        habitController: habitController,
+        homeController: homeController,
+      );
+
+      await Printing.layoutPdf(
+        name: result.fileName,
+        onLayout: (_) async => result.fileBytes,
+      );
+
+      Get.snackbar(
+        'Print Opened',
+        'Monthly report is ready to print.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Failed',
+        'Could not generate monthly report. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isGeneratingMonthlyReport.value = false;
     }
   }
 
-  void removeCustomCategory(String categoryName) {
-    customCategories.remove(categoryName);
-    _storage.write(_customCategoriesKey, customCategories.toList());
+  Future<void> requestPlayStoreReview() async {
+    if (isLaunchingReviewFlow.value) return;
+
+    if (!GetPlatform.isAndroid) {
+      Get.snackbar(
+        'Unavailable',
+        'Play Store review is available only on Android devices.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    isLaunchingReviewFlow.value = true;
+
+    try {
+      final canRequestInAppReview = await _inAppReview.isAvailable();
+
+      if (!canRequestInAppReview) {
+        Get.snackbar(
+          'Unavailable',
+          'In-app review is not available right now. Please try again later.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      await _inAppReview.requestReview();
+      hasSubmittedPlayStoreReview.value = true;
+      await _storage.write(_playStoreReviewSubmittedKey, true);
+    } catch (_) {
+      Get.snackbar(
+        'Unavailable',
+        'Could not open in-app review right now. Please try again later.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLaunchingReviewFlow.value = false;
+    }
   }
 
-  List<String> getAllCategories() {
-    // Combine built-in and custom categories
-    List<String> all = [
-      'Health',
-      'Work',
-      'Exercise',
-      'Learning',
-      'Personal',
-      'Other',
+  String formatMonth(DateTime month) {
+    return _monthTitle(DateTime(month.year, month.month, 1));
+  }
+
+  String _monthTitle(DateTime month) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
-    all.addAll(customCategories);
-    return all;
+
+    return '${months[month.month - 1]} ${month.year}';
   }
 }

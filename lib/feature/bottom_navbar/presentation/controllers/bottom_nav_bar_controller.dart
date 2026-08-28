@@ -22,4 +22,3 @@ class BottomNavBarController extends GetxController {
     // Navigate to profile screen
   }
 }
-

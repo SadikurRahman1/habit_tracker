@@ -4,29 +4,13 @@ description: "A new Flutter project."
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+
+version: 1.0.0+4
 
 environment:
   sdk: ^3.9.2
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
+
 dependencies:
   flutter:
     sdk: flutter
@@ -37,33 +21,25 @@ dependencies:
 
   get: ^4.7.2
   google_fonts: ^6.3.1
-  pin_code_fields: ^8.0.1
-
-  #image
-  cached_network_image: ^3.4.1
-  flutter_svg: ^2.2.0
-
-  #storage package
   get_storage: ^2.1.1
-
-  #skeleton
-  shimmer: ^3.0.0
-
-  #colorful loger
-  logger: ^2.6.1
-
-  flutter_spinkit: ^5.2.2
-
   uuid: ^4.0.0
-
   share_plus: ^7.0.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  path_provider: ^2.1.5
   flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.2
+  flutter_timezone: ^3.0.1
 
-  #firebase
-  firebase_core: ^3.8.1
-  firebase_auth: ^5.3.4
-  cloud_firestore: ^5.6.0
-  firebase_storage: ^12.3.8
+
+
+  #calendar
+  table_calendar: ^3.1.2
+  in_app_review: ^2.0.11
+
+  
+  in_app_update: ^4.2.5
+  rename: ^3.1.0
 
 dev_dependencies:
   flutter_test:

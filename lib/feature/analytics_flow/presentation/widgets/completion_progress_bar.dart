@@ -8,11 +8,11 @@ class CompletionProgressBar extends StatelessWidget {
   final String period;
 
   const CompletionProgressBar({
-    Key? key,
+    super.key,
     required this.title,
     required this.percentage,
     required this.period,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +28,10 @@ class CompletionProgressBar extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.onMainColor,
                 ),
               ),
               Text(
@@ -42,8 +42,8 @@ class CompletionProgressBar extends StatelessWidget {
                   color: percentage >= 75
                       ? AppColors.success
                       : percentage >= 50
-                          ? AppColors.warning
-                          : Colors.red,
+                      ? AppColors.warning
+                      : AppColors.danger,
                 ),
               ),
             ],
@@ -54,23 +54,23 @@ class CompletionProgressBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: percentage / 100,
               minHeight: 10,
-              backgroundColor: Colors.white10,
+              backgroundColor: AppColors.overlayColor,
               valueColor: AlwaysStoppedAnimation<Color>(
                 percentage >= 75
                     ? AppColors.success
                     : percentage >= 50
-                        ? AppColors.warning
-                        : Colors.red,
+                    ? AppColors.warning
+                    : AppColors.danger,
               ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             period,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Colors.white54,
+              color: AppColors.onMainSecondary,
             ),
           ),
         ],

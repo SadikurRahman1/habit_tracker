@@ -25,7 +25,9 @@ class TimerController extends GetxController {
     _updateTask(task.copyWith(isTimerActive: true));
 
     // Start new timer
-    _activeTimers[task.id] = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _activeTimers[task.id] = Timer.periodic(const Duration(seconds: 1), (
+      timer,
+    ) {
       final currentTask = _getTaskById(task.id);
       if (currentTask == null) {
         timer.cancel();
@@ -34,9 +36,11 @@ class TimerController extends GetxController {
       }
 
       if (currentTask.timerRemainingSeconds > 0) {
-        _updateTask(currentTask.copyWith(
-          timerRemainingSeconds: currentTask.timerRemainingSeconds - 1,
-        ));
+        _updateTask(
+          currentTask.copyWith(
+            timerRemainingSeconds: currentTask.timerRemainingSeconds - 1,
+          ),
+        );
       } else {
         // Timer completed
         completeTimer(currentTask);
@@ -53,12 +57,14 @@ class TimerController extends GetxController {
   void completeTimer(Task task) {
     _activeTimers[task.id]?.cancel();
     _activeTimers.remove(task.id);
-    _updateTask(task.copyWith(
-      isCompleted: true,
-      isTimerActive: false,
-      timerRemainingSeconds: 0,
-    ));
-    
+    _updateTask(
+      task.copyWith(
+        isCompleted: true,
+        isTimerActive: false,
+        timerRemainingSeconds: 0,
+      ),
+    );
+
     Get.snackbar(
       'Completed!',
       'Timer finished - Task completed',
@@ -71,11 +77,13 @@ class TimerController extends GetxController {
   void resetTimer(Task task) {
     _activeTimers[task.id]?.cancel();
     _activeTimers.remove(task.id);
-    _updateTask(task.copyWith(
-      isTimerActive: false,
-      timerRemainingSeconds: task.timerDurationInSeconds,
-      isCompleted: false,
-    ));
+    _updateTask(
+      task.copyWith(
+        isTimerActive: false,
+        timerRemainingSeconds: task.timerDurationInSeconds,
+        isCompleted: false,
+      ),
+    );
   }
 
   void _updateTask(Task updatedTask) {
@@ -102,8 +110,8 @@ class TimerController extends GetxController {
 
   // Auto-start timer for a task if conditions are met
   void autoStartTimerIfNeeded(Task task) {
-    if (task.taskType == TaskType.timer && 
-        !task.isCompleted && 
+    if (task.taskType == TaskType.timer &&
+        !task.isCompleted &&
         task.timerRemainingSeconds > 0 &&
         !task.isTimerActive) {
       Future.delayed(const Duration(milliseconds: 100), () {

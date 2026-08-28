@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../feature/settings/controllers/settings_controller.dart';
 
 class AppColors {
   // ⚪️ Basic Colors
@@ -33,14 +35,29 @@ class AppColors {
   static const Color teal = Color(0xFF009688);
   static const Color blueGray = Color(0xFF607D8B);
 
-  // 🌟 Background / Surface Colors
-  // static const Color scaffoldBackground = Color(0xFF003485);
-  static const Color cardBackground = Color(0xFFFFFFFF);
-  static const Color shadowColor = Color(0x33000000); // 20% black for shadow
+  // 🌟 Theme Palettes
+  static const Color darkBgColor = Color(0xFF030712);
+  static const Color darkMainColor = Color(0xFF111829);
+  static const Color darkBorderColor = Color(0xFF1E2939);
+  static const Color darkInActiveColor = Color(0xFF99A1AF);
+  static const Color darkPrimaryText = Color(0xFFFFFFFF);
+  static const Color darkSecondaryText = Color(0xFFCBD5E1);
 
-  // 📝 Text Colors
-  static const Color primaryText = Color(0xFFFFFFFF);
-  static const Color secondaryText = Color(0xFF636F85);
+  static const Color lightBgColor = Color(0xFFF8FAFC);
+  static const Color lightMainColor = Color(0xFFFFFFFF);
+  static const Color lightBorderColor = Color(0xFFE2E8F0);
+  static const Color lightInActiveColor = Color(0xFF64748B);
+  static const Color lightPrimaryText = Color(0xFF0F172A);
+  static const Color lightSecondaryText = Color(0xFF475569);
+
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color shadowColor = Color(0x33000000);
+
+  // 📝 Text Colors (Theme-aware)
+  static Color get primaryText =>
+      isDarkMode ? darkPrimaryText : lightPrimaryText;
+  static Color get secondaryText =>
+      isDarkMode ? darkSecondaryText : lightSecondaryText;
 
   static const Color blackText = Color(0xFF2D2D2D);
   static const Color disabledText = Color(0xFFBDBDBD);
@@ -49,9 +66,37 @@ class AppColors {
   static const Color info = Color(0xFF2196F3); // blue
   static const Color accent = Color(0xFFFF4081);
 
-  // static const Color bgColor = Color(0xFF003485);
-  static const Color bgColor = Color(0xFF030712);
-  static const Color mainColor = Color(0xFF111829);
-  static const Color borderColor = Color(0xFF1E2939);
-  static const Color inActiveColor = Color(0xFF99A1AF);
+  static bool get isDarkMode {
+    try {
+      // Try to get from SettingsController first for instant updates
+      if (Get.isRegistered<SettingsController>()) {
+        return Get.find<SettingsController>().isDarkMode.value;
+      }
+    } catch (_) {
+      // Controller not found, fall back to Get.isDarkMode
+    }
+    return Get.isDarkMode;
+  }
+
+  static Color get bgColor => isDarkMode ? darkBgColor : lightBgColor;
+  static Color get mainColor => isDarkMode ? darkMainColor : lightMainColor;
+  static Color get borderColor =>
+      isDarkMode ? darkBorderColor : lightBorderColor;
+  static Color get inActiveColor =>
+      isDarkMode ? darkInActiveColor : lightInActiveColor;
+
+  static Color get onMainColor =>
+      isDarkMode ? darkPrimaryText : lightPrimaryText;
+  static Color get onMainSecondary =>
+      isDarkMode ? darkSecondaryText : lightSecondaryText;
+
+  static Color get overlayColor => isDarkMode
+      ? Colors.white.withValues(alpha: 0.06)
+      : Colors.black.withValues(alpha: 0.04);
+  static Color get weakOverlayColor => isDarkMode
+      ? Colors.white.withValues(alpha: 0.12)
+      : Colors.black.withValues(alpha: 0.08);
+  static Color get handleColor => isDarkMode ? Colors.white24 : Colors.black26;
+  static Color get inputFillColor =>
+      isDarkMode ? Colors.white10 : Colors.black.withValues(alpha: 0.04);
 }

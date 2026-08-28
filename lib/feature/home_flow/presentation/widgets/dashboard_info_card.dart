@@ -32,10 +32,7 @@ class DashboardInfoCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: iconColor ?? Colors.white,
-              ),
+              Icon(icon, color: iconColor ?? Colors.white),
               const SizedBox(width: 8),
               Text(
                 title,

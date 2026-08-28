@@ -1,4 +1,3 @@
-
 import 'package:habit/feature/home_flow/presentation/bindings/home_binding.dart';
 import 'package:habit/feature/home_flow/presentation/screens/home_screen.dart';
 import 'package:habit/feature/settings/bindings/settings_binding.dart';
@@ -50,12 +49,12 @@ class AppPages {
       //   page: const RegistrationScreen(),
       //   binding: RegistrationBinding(),
       // ),
-
       _getPages(
         name: AppRoutes.mainBottomNavScreen,
         page: const MainBottomNavScreen(),
         binding: BottomNavBarBinding(),
       ),
+
       // _getPages(
       //   name: AppRoutes.chatListScreen,
       //   page: const ChatListScreen(),
@@ -67,7 +66,6 @@ class AppPages {
       //   page: const ChatScreen(chat: null,),
       //   binding: ChatBinding(),
       // ),
-
     ];
   }
 
@@ -77,7 +75,3 @@ class AppPages {
     Bindings? binding,
   }) => GetPage(name: name, page: () => page, binding: binding);
 }
-
-
-
-

@@ -1,60 +1,20 @@
 import 'package:flutter/material.dart';
 
-enum TaskCategory {
-  health,
-  work,
-  exercise,
-  learning,
-  personal,
-  other,
-}
-
-extension TaskCategoryExt on TaskCategory {
-  String get label {
-    switch (this) {
-      case TaskCategory.health:
-        return 'Health';
-      case TaskCategory.work:
-        return 'Work';
-      case TaskCategory.exercise:
-        return 'Exercise';
-      case TaskCategory.learning:
-        return 'Learning';
-      case TaskCategory.personal:
-        return 'Personal';
-      case TaskCategory.other:
-        return 'Other';
-    }
-  }
-
-  Color get color {
-    switch (this) {
-      case TaskCategory.health:
-        return Colors.green;
-      case TaskCategory.work:
-        return Colors.blue;
-      case TaskCategory.exercise:
-        return Colors.orange;
-      case TaskCategory.learning:
-        return Colors.purple;
-      case TaskCategory.personal:
-        return Colors.pink;
-      case TaskCategory.other:
-        return Colors.grey;
-    }
-  }
-}
-
 class Task {
   final String id;
   final String description; // Now used as title/task name
-  final TaskCategory category;
+  final String
+  categoryId; // References CategoryModel.id from CategoryController
   final TaskPriority priority;
-  final TaskType taskType; // 1: Description Only, 2: Yes/No, 3: Write Answer, 4: Integer Target, 5: Timer
+  final TaskType
+  taskType; // 1: Description Only, 2: Yes/No, 3: Write Answer, 4: Integer Target, 5: Timer
   final String? question; // For types 2, 3, 4
   final int targetValue; // For type 4
-  final List<int> selectedDays; // Days of week: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
+  final List<int>
+  selectedDays; // Days of week: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
   bool notificationEnabled;
+  final List<String> notificationTimes; // Times in HH:mm format
+  final Map<String, int> progressByDate; // yyyy-MM-dd -> progress count
   bool isCompleted; // For type 1
   String? answerText; // For type 3
   int currentProgress; // For type 4
@@ -65,13 +25,15 @@ class Task {
   Task({
     required this.id,
     required this.description,
-    this.category = TaskCategory.other,
+    this.categoryId = '', // Empty string means no category
     required this.priority,
     required this.taskType,
     this.question,
     this.targetValue = 1,
     this.selectedDays = const [1, 2, 3, 4, 5, 6, 7],
     this.notificationEnabled = false,
+    this.notificationTimes = const [],
+    this.progressByDate = const {},
     this.isCompleted = false,
     this.answerText,
     this.currentProgress = 0,
@@ -83,6 +45,27 @@ class Task {
   double get completionPercentage {
     if (taskType != TaskType.integerTarget || targetValue == 0) return 0;
     return (currentProgress / targetValue).clamp(0.0, 1.0);
+  }
+
+  int get frequency => targetValue <= 0 ? 1 : targetValue;
+
+  int progressForDate(DateTime date) {
+    return progressByDate[_dateKey(date)] ?? 0;
+  }
+
+  bool isCompletedForDate(DateTime date) {
+    return progressForDate(date) >= frequency;
+  }
+
+  double progressPercentageForDate(DateTime date) {
+    return (progressForDate(date) / frequency).clamp(0.0, 1.0);
+  }
+
+  static String _dateKey(DateTime date) {
+    final y = date.year.toString().padLeft(4, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 
   bool get isFullyCompleted {
@@ -103,13 +86,15 @@ class Task {
   Task copyWith({
     String? id,
     String? description,
-    TaskCategory? category,
+    String? categoryId,
     TaskPriority? priority,
     TaskType? taskType,
     String? question,
     int? targetValue,
     List<int>? selectedDays,
     bool? notificationEnabled,
+    List<String>? notificationTimes,
+    Map<String, int>? progressByDate,
     bool? isCompleted,
     String? answerText,
     int? currentProgress,
@@ -120,19 +105,23 @@ class Task {
     return Task(
       id: id ?? this.id,
       description: description ?? this.description,
-      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       priority: priority ?? this.priority,
       taskType: taskType ?? this.taskType,
       question: question ?? this.question,
       targetValue: targetValue ?? this.targetValue,
       selectedDays: selectedDays ?? this.selectedDays,
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      notificationTimes: notificationTimes ?? this.notificationTimes,
+      progressByDate: progressByDate ?? this.progressByDate,
       isCompleted: isCompleted ?? this.isCompleted,
       answerText: answerText ?? this.answerText,
       currentProgress: currentProgress ?? this.currentProgress,
-      timerDurationInSeconds: timerDurationInSeconds ?? this.timerDurationInSeconds,
+      timerDurationInSeconds:
+          timerDurationInSeconds ?? this.timerDurationInSeconds,
       isTimerActive: isTimerActive ?? this.isTimerActive,
-      timerRemainingSeconds: timerRemainingSeconds ?? this.timerRemainingSeconds,
+      timerRemainingSeconds:
+          timerRemainingSeconds ?? this.timerRemainingSeconds,
     );
   }
 }

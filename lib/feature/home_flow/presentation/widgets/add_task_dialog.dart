@@ -1,32 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:habit/core/constants/app_colors.dart';
+import 'package:habit/core/constants/category_icons.dart';
+import 'package:habit/feature/settings/category_flow/controllers/category_controller.dart';
 import '../../model/task.dart';
 import '../controllers/home_controller.dart';
 
-class AddTaskDialog extends StatefulWidget {
-  const AddTaskDialog({Key? key}) : super(key: key);
+class AddTaskDialog extends StatelessWidget {
+  final titleController = TextEditingController();
+  final targetValueController = TextEditingController();
 
-  @override
-  State<AddTaskDialog> createState() => _AddTaskDialogState();
-}
+  final selectedCategoryId =
+      ''.obs; // Changed from TaskCategory enum to categoryId
+  final selectedPriority = TaskPriority.medium.obs;
+  final selectedTaskType = TaskType.descriptionOnly.obs;
+  final selectedTimerMinutes = 5.obs;
+  final selectedDays = <int>{1, 2, 3, 4, 5, 6, 7}.obs;
 
-class _AddTaskDialogState extends State<AddTaskDialog> {
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController targetValueController = TextEditingController();
-
-  TaskCategory selectedCategory = TaskCategory.other;
-  TaskPriority selectedPriority = TaskPriority.medium;
-  TaskType selectedTaskType = TaskType.descriptionOnly;
-  int selectedTimerMinutes = 5;
-  Set<int> selectedDays = {1, 2, 3, 4, 5, 6, 7};
-
-  @override
-  void dispose() {
-    titleController.dispose();
-    targetValueController.dispose();
-    super.dispose();
-  }
+  AddTaskDialog({Key? key}) : super(key: key);
 
   void _addTask() {
     if (titleController.text.isEmpty) {
@@ -49,7 +40,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       return;
     }
 
-    if (selectedTaskType == TaskType.integerTarget &&
+    if (selectedTaskType.value == TaskType.integerTarget &&
         targetValueController.text.isEmpty) {
       Get.snackbar(
         'Error',
@@ -60,7 +51,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       return;
     }
 
-    if (selectedTaskType == TaskType.timer && selectedTimerMinutes == 0) {
+    if (selectedTaskType.value == TaskType.timer &&
+        selectedTimerMinutes.value == 0) {
       Get.snackbar(
         'Error',
         'Please select timer duration',
@@ -75,14 +67,19 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final homeController = Get.find<HomeController>();
     homeController.addTask(
       description: titleController.text,
-      category: selectedCategory,
-      priority: selectedPriority,
-      taskType: selectedTaskType,
-      question: null, // No question field anymore - title is the question
+      categoryId: selectedCategoryId.value, // Use categoryId
+      priority: selectedPriority.value,
+      taskType: selectedTaskType.value,
+      question: null,
       targetValue: targetValue,
-      timerDurationInSeconds: selectedTaskType == TaskType.timer ? selectedTimerMinutes * 60 : 0,
+      timerDurationInSeconds: selectedTaskType.value == TaskType.timer
+          ? selectedTimerMinutes.value * 60
+          : 0,
       selectedDays: selectedDays.toList()..sort(),
     );
+
+    titleController.dispose();
+    targetValueController.dispose();
 
     Get.back();
     Get.snackbar(
@@ -93,20 +90,16 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     );
   }
 
-  Future<void> _showTimePicker() async {
+  Future<void> _showTimePicker(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(hour: 0, minute: selectedTimerMinutes),
+      initialTime: TimeOfDay(hour: 0, minute: selectedTimerMinutes.value),
     );
-    
+
     if (picked != null) {
-      // Convert to total minutes
       int totalMinutes = picked.hour * 60 + picked.minute;
-      if (totalMinutes == 0) totalMinutes = 5; // minimum 5 minutes
-      
-      setState(() {
-        selectedTimerMinutes = totalMinutes;
-      });
+      if (totalMinutes == 0) totalMinutes = 5;
+      selectedTimerMinutes.value = totalMinutes;
     }
   }
 
@@ -117,6 +110,184 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       return '${hours}h ${mins}m';
     }
     return '${mins}m';
+  }
+
+  Widget _buildLabel(String label) {
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(
+    String categoryId,
+    String label,
+    Color color,
+    IconData icon,
+  ) {
+    return Obx(() {
+      final isSelected = selectedCategoryId.value == categoryId;
+      return GestureDetector(
+        onTap: () => selectedCategoryId.value = categoryId,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? color : color.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: Colors.white),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildPriorityChip(TaskPriority priority, String label) {
+    return Expanded(
+      child: Obx(() {
+        final isSelected = selectedPriority.value == priority;
+        final color = priority.color;
+
+        return GestureDetector(
+          onTap: () => selectedPriority.value = priority,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? color : color.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildTaskTypeButton(TaskType type, String title, String description) {
+    return Obx(() {
+      final isSelected = selectedTaskType.value == type;
+      return GestureDetector(
+        onTap: () => selectedTaskType.value = type,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue.withOpacity(0.3) : Colors.white10,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? Colors.blue : AppColors.borderColor,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.blue : Colors.white54,
+                  ),
+                  color: isSelected ? Colors.blue : Colors.transparent,
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, color: Colors.white, size: 14)
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildDayCircle(int dayNumber, String dayLabel) {
+    return Obx(() {
+      final isSelected = selectedDays.contains(dayNumber);
+      return GestureDetector(
+        onTap: () {
+          if (isSelected) {
+            selectedDays.remove(dayNumber);
+          } else {
+            selectedDays.add(dayNumber);
+          }
+          selectedDays.refresh();
+        },
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isSelected ? Colors.blue : Colors.transparent,
+            border: Border.all(
+              color: isSelected ? Colors.blue : AppColors.borderColor,
+              width: 2,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              dayLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.white70,
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   @override
@@ -172,23 +343,42 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               const SizedBox(height: 16),
 
               // 2. Category Selection
-              _buildLabel('Category *'),
+              _buildLabel('Category (Optional)'),
               const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildCategoryChip(TaskCategory.health),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.work),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.exercise),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.learning),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip(TaskCategory.personal),
-                  ],
-                ),
+              GetBuilder<CategoryController>(
+                builder: (categoryController) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        // No category option
+                        _buildCategoryChip(
+                          '',
+                          'No Category',
+                          Colors.grey,
+                          Icons.block,
+                        ),
+                        const SizedBox(width: 8),
+                        // User's categories
+                        ...categoryController.categories.map((category) {
+                          final icon =
+                              CategoryIcons.icons[category.icon] ??
+                              Icons.category;
+                          final color = category.getColor();
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _buildCategoryChip(
+                              category.id,
+                              category.name,
+                              color,
+                              icon,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
 
@@ -270,75 +460,110 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               const SizedBox(height: 16),
 
               // Target Value field (for integerTarget)
-              if (selectedTaskType == TaskType.integerTarget) ...[
-                _buildLabel('Target Value *'),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: targetValueController,
-                  style: const TextStyle(color: Colors.white),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'e.g., 5 (for 5 glasses of water)',
-                    hintStyle: const TextStyle(color: Colors.white54),
-                    filled: true,
-                    fillColor: Colors.white10,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.borderColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.borderColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.blue, width: 2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Timer Duration Selection (for timer type)
-              if (selectedTaskType == TaskType.timer) ...[
-                _buildLabel('Timer Duration *'),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: _showTimePicker,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.borderColor),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.schedule, color: Colors.white70),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Selected: ${_formatDuration(selectedTimerMinutes)}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
+              Obx(
+                () => selectedTaskType.value == TaskType.integerTarget
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel('Target Value *'),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: targetValueController,
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: 'e.g., 5 (for 5 glasses of water)',
+                              hintStyle: const TextStyle(color: Colors.white54),
+                              filled: true,
+                              fillColor: Colors.white10,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: AppColors.borderColor,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: AppColors.borderColor,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.blue,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        const Icon(Icons.edit, color: Colors.blue),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                          const SizedBox(height: 16),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+
+              // Timer Duration Selection (for timer type)
+              Obx(
+                () => selectedTaskType.value == TaskType.timer
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel('Timer Duration *'),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () => _showTimePicker(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppColors.borderColor,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.schedule,
+                                    color: Colors.white70,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Obx(
+                                      () => Text(
+                                        'Selected: ${_formatDuration(selectedTimerMinutes.value)}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.edit, color: Colors.blue),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
               // Action Buttons
               Row(
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => Get.back(),
+                      onTap: () {
+                        titleController.dispose();
+                        targetValueController.dispose();
+                        Get.back();
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
@@ -384,173 +609,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 ],
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String label) {
-    return Text(
-      label,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildCategoryChip(TaskCategory category) {
-    final isSelected = selectedCategory == category;
-    return GestureDetector(
-      onTap: () => setState(() => selectedCategory = category),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? category.color : category.color.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: category.color),
-        ),
-        child: Text(
-          category.label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriorityChip(TaskPriority priority, String label) {
-    final isSelected = selectedPriority == priority;
-    final color = priority.color;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => selectedPriority = priority),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? color : color.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTaskTypeButton(
-    TaskType type,
-    String title,
-    String description,
-  ) {
-    final isSelected = selectedTaskType == type;
-    return GestureDetector(
-      onTap: () => setState(() => selectedTaskType = type),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.3) : Colors.white10,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? Colors.blue : AppColors.borderColor,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? Colors.blue : Colors.white54,
-                ),
-                color: isSelected ? Colors.blue : Colors.transparent,
-              ),
-              child: isSelected
-                  ? const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 14,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    description,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.white54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDayCircle(int dayNumber, String dayLabel) {
-    final isSelected = selectedDays.contains(dayNumber);
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            selectedDays.remove(dayNumber);
-          } else {
-            selectedDays.add(dayNumber);
-          }
-        });
-      },
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isSelected ? Colors.blue : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? Colors.blue : AppColors.borderColor,
-            width: 2,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            dayLabel,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.white70,
-            ),
           ),
         ),
       ),

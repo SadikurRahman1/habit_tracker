@@ -1,13 +1,16 @@
+import 'dart:async';
+
+import 'package:habit/core/services/in_app_update_service.dart';
 import '../../../../../../../core/exported_files/exported_file.dart';
 
 class SplashController extends GetxController {
   Future<void> _moveToNext() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 1));
 
     // final String? onboardingCompeted = STService().getData(
     //   AuthConstants.onboardingCompletedKey,
     // );
-    final String? onboardingCompeted = null ;
+    final String? onboardingCompeted = null;
 
     // if (onboardingCompeted != null) {
     //   String? token = STService().getData(AuthConstants.tokenKey);
@@ -17,13 +20,14 @@ class SplashController extends GetxController {
     //     // Get.offAllNamed(AppRoutes.loginScreen);
     //   }
     // } else {
-      Get.offAllNamed(AppRoutes.onboardingScreen);
+    Get.offAllNamed(AppRoutes.mainBottomNavScreen);
     // }
   }
 
   @override
   void onInit() {
     super.onInit();
+    unawaited(InAppUpdateService.checkForUpdate());
     _moveToNext();
   }
 }
